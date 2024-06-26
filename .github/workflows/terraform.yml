@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform-plan
-          path: terraform.plan
+          path: terraform/env/dev/terraform.plan
 
   cd:
     runs-on: ubuntu-latest
