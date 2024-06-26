@@ -21,7 +21,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.DEV_PIPELINE_ROLE }}
           role-session-name: terraform-ci-job
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       # Adicionar permissões de execução no script de verificação de mudanças
       - name: Grant execute permission to script
