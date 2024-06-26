@@ -8,8 +8,6 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    environment: dev
-
     permissions:
       id-token: write
       contents: read
