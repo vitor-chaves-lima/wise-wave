@@ -1,0 +1,47 @@
+on: 
+  pull_request: 
+    branches: 
+      - develop
+    paths: 
+      'terraform/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Executar script Bash para verificar mudanças fora da pasta 'terraform'
+      - name: Check for changes outside 'terraform' folder
+        id: check_changes
+        run: ./scripts/check_changes.sh
+
+      # Passo de lint do Terraform
+      - name: Terraform Lint
+        if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        run: terraform fmt -check
+
+      # Passo de validação do Terraform
+      - name: Terraform Validate
+        if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        run: terraform validate
+
+      # Passo de inicialização do terraform para o ambiente de dev
+      - name: Terraform Initialization
+        if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        run: terraform init
+      
+      # Passo de plan do terraform para o ambiente de dev
+      - name: Terraform Plan
+        if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        run: terraform plan -out=terraform.plan
+
+      # Passo de upload do arquivo de plan do terraform
+      - name: Upload Terraform Plan Artifact
+        if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform-plan
+          path: terraform.plan
