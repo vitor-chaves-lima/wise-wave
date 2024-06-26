@@ -16,7 +16,7 @@ jobs:
       # Executar script Bash para verificar mudanças fora da pasta 'terraform'
       - name: Check for changes outside 'terraform' folder
         id: check_changes
-        run: ./scripts/check_changes.sh
+        run: ./scripts/check_changes_outside_folder.sh terraform
 
       # Passo de lint do Terraform
       - name: Terraform Lint
