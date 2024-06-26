@@ -5,13 +5,23 @@ on:
     paths: 
       'terraform/**'
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
+permissions:
+  id-token: write
 
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    environment: DEV
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+    
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.PIPELINE_ROLE_ARN }}
+          role-session-name: pipeline-ci-job
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # Adicionar permissões de execução no script de verificação de mudanças
       - name: Grant execute permission to script
@@ -51,3 +61,12 @@ jobs:
         with:
           name: terraform-plan
           path: terraform.plan
+
+  cd:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event.pull_request.merged == true  # Condição para executar o job de CD apenas após o merge da PR
+    environment: DEV
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
