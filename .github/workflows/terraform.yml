@@ -14,11 +14,6 @@ jobs:
       id-token: write
       contents: read
 
-    env:
-      AWS_ROLE_TO_ASSUME_ARN: ${{ secrets.PIPELINE_ROLE_ARN }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_AUDIENCE : ${{ secrets.AWS_PIPELINE_AUDIENCE }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -26,10 +21,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME_ARN }}
+          role-to-assume: ${{ secrets.DEV_PIPELINE_ROLE }}
           role-session-name: terraform-ci-job
           aws-region: ${{ env.AWS_REGION }}
-          audience: ${{ env.AWS_AUDIENCE }}
 
       # Adicionar permissões de execução no script de verificação de mudanças
       - name: Grant execute permission to script
