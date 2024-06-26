@@ -37,6 +37,11 @@ jobs:
         if: ${{ steps.check_changes.outputs.changes != 'true' }}
         run: terraform init
       
+      # Passo para entrar no diretório do ambiente de dev
+      - name: Change Directory
+        if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        run: cd terraform/env/dev
+
       # Passo de plan do terraform para o ambiente de dev
       - name: Terraform Plan
         if: ${{ steps.check_changes.outputs.changes != 'true' }}
