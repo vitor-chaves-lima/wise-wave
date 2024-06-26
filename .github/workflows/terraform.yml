@@ -13,6 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Adicionar permissões de execução no script de verificação de mudanças
+      - name: Grant execute permission to script
+        run: chmod +x ./scripts/check_changes_outside_folder.sh
+
       # Executar script Bash para verificar mudanças fora da pasta 'terraform'
       - name: Check for changes outside 'terraform' folder
         id: check_changes
