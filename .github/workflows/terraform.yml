@@ -40,11 +40,13 @@ jobs:
       # Passo de inicialização do terraform para o ambiente de dev
       - name: Terraform Initialization
         if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        working-directory: terraform/env/dev
         run: terraform init
 
       # Passo de plan do terraform para o ambiente de dev
       - name: Terraform Plan
         if: ${{ steps.check_changes.outputs.changes != 'true' }}
+        working-directory: terraform/env/dev
         run: terraform plan -out=terraform.plan
 
       # Passo de upload do arquivo de plan do terraform
