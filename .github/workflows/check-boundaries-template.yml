@@ -12,11 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
     
-      # Adicionar permissões de execução no script de verificação de mudanças
-      - name: Grant execute permission to script
-        run: chmod +x ./scripts/check_changes_outside_folder.sh
-
-      # Executar script Bash para verificar mudanças fora da pasta
-      - name: "Check for changes outside ${{ inputs.boundary_folder }} folder"
-        id: check_changes
-        run: "./scripts/check_changes_outside_folder.sh ${{ inputs.boundary_folder }}"
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v1
+      
+      - name: Print Changed Files
+        run: |
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.files }}"
