@@ -41,7 +41,7 @@ jobs:
             fi
           done
 
-          echo "outside-boundary-changed-files=$files_outside_boundary" >> $OUTSIDE_BOUNDARY_CHANGED_FILES
+          echo "outside-boundary-changed-files=$files_outside_boundary" >> $GITHUB_OUTPUT
 
       - name: Checking files outside ${{ inputs.boundary_folder }} directory
         env:
@@ -49,6 +49,6 @@ jobs:
           BOUNDARY_FOLDER: ${{ inputs.boundary_folder }}
         run: |
           if [ ${#$OUTSIDE_BOUNDARY_CHANGED_FILES} -gt 0 ]; then
-              echo "Error: There are changed files outside $BOUNDARY_FOLDER"
-              exit 1
+            echo "Error: There are changed files outside $BOUNDARY_FOLDER"
+            exit 1
           fi
