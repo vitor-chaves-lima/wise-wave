@@ -7,11 +7,14 @@ on:
   
 jobs:
   call-check-boundaries:
+    name: Check PR Boundaries
     uses: ./.github/workflows/check-boundaries.yml
     with:
       boundary_folder: terraform
 
   plan_terraform:
+    name: Plan Terraform deployment
+    needs: call-check-boundaries
     runs-on: ubuntu-latest
     
     permissions:
