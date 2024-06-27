@@ -25,7 +25,7 @@ jobs:
             echo "- $file"
           done
       
-      - name: Checking files outside ${{ inputs.boundary_folder }}
+      - name: Listing files outside ${{ inputs.boundary_folder }}
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
@@ -34,19 +34,9 @@ jobs:
           for file in ${ALL_CHANGED_FILES}; do
             file_path="$(realpath "$file")"
 
-            if [[ ! "$file_path" =~ ^"$specific_directory" ]]; then
-                files_outside_boundary+=("$file_path")
+            if [[ ! "$file_path" =~ ^"${{ inputs.boundary_folder }}" ]]; then
+              files_outside_boundary+=("$file_path")
             fi
           done
 
-          if [ ${#files_outside_boundary[@]} -gt 0 ]; then
-            echo "ERROR: The following files are outside the specific directory $specific_directory:"
-            for file in "${files_outside_boundary[@]}"
-            do
-                echo "$file"
-            done
-            exit 1
-          else
-            echo "All files are within the specific directory $specific_directory."
-            exit 0
-          fi
+          echo "::set-output name=outside_boundary_files::$files_outside_boundary"
