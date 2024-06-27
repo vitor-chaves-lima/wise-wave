@@ -34,11 +34,8 @@ jobs:
 
           echo "Changed files outside ${BOUNDARY_FOLDER}:"
           for file in ${ALL_CHANGED_FILES}; do
-            file_path="$(realpath "$file")"
-            echo $file_path
-            
-            if [[ ! "$file_path" =~ ^"${BOUNDARY_FOLDER}" ]]; then
-              files_outside_boundary+=("$file_path")
+            if [[ ! "$file" =~ ^"${BOUNDARY_FOLDER}" ]]; then
+              files_outside_boundary+=("$file")
               echo "- $file"
             fi
           done
