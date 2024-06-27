@@ -32,10 +32,11 @@ jobs:
         run: |
           files_outside_boundary=()
 
+          echo "Changed files outside ${BOUNDARY_FOLDER}:"
           for file in ${ALL_CHANGED_FILES}; do
             file_path="$(realpath "$file")"
-
-            echo "Changed files outside ${BOUNDARY_FOLDER}:"
+            echo $file_path
+            
             if [[ ! "$file_path" =~ ^"${BOUNDARY_FOLDER}" ]]; then
               files_outside_boundary+=("$file_path")
               echo "- $file"
