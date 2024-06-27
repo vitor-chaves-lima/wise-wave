@@ -17,6 +17,6 @@ jobs:
         run: chmod +x ./scripts/check_changes_outside_folder.sh
 
       # Executar script Bash para verificar mudanças fora da pasta
-      - name: Check for changes outside '${inputs.boundary_folder}' folder
+      - name: "Check for changes outside ${{ inputs.boundary_folder }} folder"
         id: check_changes
-        run: ./scripts/check_changes_outside_folder.sh ${inputs.boundary_folder}
+        run: "./scripts/check_changes_outside_folder.sh ${{ inputs.boundary_folder }}"
