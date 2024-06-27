@@ -49,6 +49,6 @@ jobs:
           BOUNDARY_FOLDER: ${{ inputs.boundary_folder }}
         run: |
           if [ ${#OUTSIDE_BOUNDARY_CHANGED_FILES} -gt 0 ]; then
-            echo "Error: There are changed files outside $BOUNDARY_FOLDER"
+            echo "Error: There are changed files outside $BOUNDARY_FOLDER" directory
             exit 1
           fi
