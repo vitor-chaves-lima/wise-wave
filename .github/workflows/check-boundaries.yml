@@ -1,0 +1,19 @@
+on:
+  workflow_call:
+    inputs:
+      boundary_folder:
+        required: true
+        type: string
+
+jobs:
+  check_boundaries:
+    runs-on: ubuntu-latest
+    steps:
+      # Adicionar permissões de execução no script de verificação de mudanças
+      - name: Grant execute permission to script
+        run: chmod +x ./scripts/check_changes_outside_folder.sh
+
+      # Executar script Bash para verificar mudanças fora da pasta
+      - name: Check for changes outside '${inputs.boundary_folder}' folder
+        id: check_changes
+        run: ./scripts/check_changes_outside_folder.sh ${inputs.boundary_folder}
