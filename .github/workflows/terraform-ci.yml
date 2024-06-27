@@ -12,25 +12,25 @@ jobs:
     with:
       boundary_folder: terraform
 
-  plan_terraform:
-    name: Plan Terraform deployment
-    needs: call-check-boundaries
-    runs-on: ubuntu-latest
+  # plan_terraform:
+  #   name: Plan Terraform deployment
+  #   needs: call-check-boundaries
+  #   runs-on: ubuntu-latest
     
-    permissions:
-      id-token: write
-      contents: read
+  #   permissions:
+  #     id-token: write
+  #     contents: read
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
     
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ secrets.DEV_PIPELINE_ROLE }}
-          role-session-name: terraform-ci-job
-          aws-region: ${{ vars.AWS_REGION }}
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v3
+  #       with:
+  #         role-to-assume: ${{ secrets.DEV_PIPELINE_ROLE }}
+  #         role-session-name: terraform-ci-job
+  #         aws-region: ${{ vars.AWS_REGION }}
 
       # # Passo de lint do Terraform
       # - name: Terraform Lint
