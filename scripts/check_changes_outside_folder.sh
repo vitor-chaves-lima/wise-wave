@@ -12,18 +12,29 @@ directory="$1"
 changes_detected=false
 changed_dirs=""
 
-# Loop through modified files to check directories
+# Loop through modified files to check directories and list changed directories
+echo "Modified directories:"
 git diff --name-only "${GITHUB_BASE_REF}" "${GITHUB_HEAD_REF}" | while read -r file; do
   file_dir=$(dirname "${file}")
-  if [[ "$file_dir" != "$directory" && ! "$changed_dirs" =~ "$file_dir" ]]; then
-    changes_detected=true
+  if [[ ! "$changed_dirs" =~ "$file_dir" ]]; then
     changed_dirs+=" $file_dir"
+    echo "$file_dir"
+  fi
+done
+echo ""
+
+# Check if changes outside specified directory are detected
+for dir in $changed_dirs; do
+  if [[ "$dir" != "$directory" ]]; then
+    changes_detected=true
   fi
 done
 
 # If changes outside specified directory are detected, display error message
 if [ "$changes_detected" = true ]; then
-  echo "Changes detected outside '${directory}' context in directories:${changed_dirs}"
+  echo "Changes detected outside '${directory}' context in directories:"
+  echo "$changed_dirs"
+  echo ""
   echo "Please create a separate PR for changes in these directories."
   exit 1
 else
