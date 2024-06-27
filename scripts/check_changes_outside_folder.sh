@@ -12,9 +12,12 @@ directory="$1"
 changes_detected=false
 changed_dirs=""
 
+# Get the commit range for comparison
+GITHUB_BASE_REF=${GITHUB_BASE_REF:-$(git merge-base HEAD HEAD^)}
+
 # Loop through modified files to check directories and list changed directories
 echo "Modified directories:"
-git diff --name-only "${GITHUB_BASE_REF}" "${GITHUB_HEAD_REF}" | while read -r file; do
+git diff --name-only "$GITHUB_BASE_REF" HEAD | while read -r file; do
   file_dir=$(dirname "${file}")
   if [[ ! "$changed_dirs" =~ "$file_dir" ]]; then
     changed_dirs+=" $file_dir"
