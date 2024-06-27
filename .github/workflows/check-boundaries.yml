@@ -9,10 +9,9 @@ jobs:
   check_boundaries:
     runs-on: ubuntu-latest
     steps:
-      - name: Exibir Diretório Atual
-        run: |
-          pwd # Comando para imprimir o diretório atual
-
+      - name: Checkout code
+        uses: actions/checkout@v2
+    
       # Adicionar permissões de execução no script de verificação de mudanças
       - name: Grant execute permission to script
         run: chmod +x ./scripts/check_changes_outside_folder.sh
