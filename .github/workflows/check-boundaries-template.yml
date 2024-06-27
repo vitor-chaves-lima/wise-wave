@@ -28,15 +28,16 @@ jobs:
       - name: Listing files outside ${{ inputs.boundary_folder }}
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          BOUNDARY_FOLDER: ${{ inputs.boundary_folder }}
         run: |
           files_outside_boundary=()
 
           for file in ${ALL_CHANGED_FILES}; do
             file_path="$(realpath "$file")"
 
-            if [[ ! "$file_path" =~ ^"${{ inputs.boundary_folder }}" ]]; then
+            echo "Changed files outside ${BOUNDARY_FOLDER}:"
+            if [[ ! "$file_path" =~ ^"${BOUNDARY_FOLDER}" ]]; then
               files_outside_boundary+=("$file_path")
+              echo "- $file"
             fi
           done
-
-          echo "::set-output name=outside_boundary_files::$files_outside_boundary"
