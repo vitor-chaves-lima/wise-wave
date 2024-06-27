@@ -2,13 +2,13 @@ on:
   pull_request: 
     branches: 
       - develop
-    paths: 
+    paths:
       'terraform/**'
   
 jobs:
   call-check-boundaries:
     name: Check PR Boundaries
-    uses: ./.github/workflows/check-boundaries.yml
+    uses: ./.github/workflows/check-boundaries-template.yml
     with:
       boundary_folder: terraform
 
