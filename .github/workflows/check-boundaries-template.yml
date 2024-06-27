@@ -15,14 +15,38 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v44
-        # To compare changes between the current commit and the last pushed remote commit set `since_last_remote_commit: true`. e.g
-        # with:
-        #   since_last_remote_commit: true 
 
       - name: List all changed files
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
+          echo "Changed files:"
           for file in ${ALL_CHANGED_FILES}; do
-            echo "$file was changed"
+            echo "- $file"
           done
+      
+      - name: Checking files outside ${{ inputs.boundary_folder }}
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          files_outside_boundary=()
+
+          for file in ${ALL_CHANGED_FILES}; do
+            file_path="$(realpath "$file")"
+
+            if [[ ! "$file_path" =~ ^"$specific_directory" ]]; then
+                files_outside_boundary+=("$file_path")
+            fi
+          done
+
+          if [ ${#files_outside_boundary[@]} -gt 0 ]; then
+            echo "ERROR: The following files are outside the specific directory $specific_directory:"
+            for file in "${files_outside_boundary[@]}"
+            do
+                echo "$file"
+            done
+            exit 1
+          else
+            echo "All files are within the specific directory $specific_directory."
+            exit 0
+          fi
