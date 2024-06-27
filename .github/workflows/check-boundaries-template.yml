@@ -1,0 +1,54 @@
+on:
+  workflow_call:
+    inputs:
+      boundary_folder:
+        required: true
+        type: string
+
+jobs:
+  check_boundaries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+    
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+
+      - name: List all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          echo "Changed files:"
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "- $file"
+          done
+      
+      - name: Listing files outside ${{ inputs.boundary_folder }} directory
+        id: outside-boundary-files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          BOUNDARY_FOLDER: ${{ inputs.boundary_folder }}
+        run: |
+          files_outside_boundary=()
+
+          echo "Changed files outside ${BOUNDARY_FOLDER}:"
+          for file in ${ALL_CHANGED_FILES}; do
+            if [[ ! "$file" =~ ^"${BOUNDARY_FOLDER}" ]]; then
+              files_outside_boundary+=("$file")
+              echo "- $file"
+            fi
+          done
+
+          echo "outside-boundary-changed-files=$files_outside_boundary" >> $GITHUB_OUTPUT
+
+      - name: Checking files outside ${{ inputs.boundary_folder }} directory
+        env:
+          OUTSIDE_BOUNDARY_CHANGED_FILES: ${{ steps.outside-boundary-files.outputs.outside-boundary-changed-files }}
+          BOUNDARY_FOLDER: ${{ inputs.boundary_folder }}
+        run: |
+          if [ ${#OUTSIDE_BOUNDARY_CHANGED_FILES} -gt 0 ]; then
+            echo "Error: There are changed files outside $BOUNDARY_FOLDER" directory
+            exit 1
+          fi

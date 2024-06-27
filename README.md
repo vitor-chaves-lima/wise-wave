@@ -1,6 +1,6 @@
 # Wise Wave
 
-Este repositório agrupa todos os subprojetos do Wise Wave, ele é dividido em 4 partes
+Este repositório agrupa todos os subprojetos do Wise Wave, ele é dividido em três contextos
 
 - backend: Contém todos os subprojetos relacionados ao backend do projeto
 - frontend: Contém todos os subprojetos relacionados ao frontend do projeto
