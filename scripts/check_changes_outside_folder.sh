@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Obter arquivos modificados na PR usando GitHub environment variables
-files_changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}")
+echo "Base branch: $GITHUB_BASE_REF"
+echo "Head branch: $GITHUB_HEAD_REF - Current commit: $GITHUB_SHA"
+
+# Obter arquivos modificados na PR
+files_changed=$(git diff --name-only "${GITHUB_BASE_REF}" "$GITHUB_SHA")
 
 # Exibir os arquivos modificados
 echo "Changed files in the PR:"
