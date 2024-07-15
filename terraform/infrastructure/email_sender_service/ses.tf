@@ -1,7 +1,3 @@
-locals {
-  sender_email = "noreply@${local.domain_name}"
-}
-
 resource "aws_sesv2_configuration_set" "sender_configuration_set" {
   configuration_set_name = "WiseWaveEmailSender"
 
