@@ -69,7 +69,7 @@ data "aws_iam_policy_document" "email_sender_parameter_read_policy" {
     ]
 
     resources = [
-      aws_ssm_parameter.sender_email_identity_data.arn
+      aws_ssm_parameter.sender_identity.arn
     ]
   }
 }

@@ -1,5 +1,5 @@
-resource "aws_ssm_parameter" "sender_email_identity_data" {
-  name  = "/WiseWave/SenderEmailData"
+resource "aws_ssm_parameter" "sender_identity" {
+  name  = "/WiseWave/SenderIdentity"
   type  = "SecureString"
   value = <<EOF
 {

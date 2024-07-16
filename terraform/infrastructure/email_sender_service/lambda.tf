@@ -9,6 +9,12 @@ resource "aws_lambda_function" "email_sender_lambda" {
   filename         = local.email_sender_lambda_zip_path
   source_code_hash = filebase64sha256(local.email_sender_lambda_zip_path)
 
+  environment {
+    variables = {
+      SENDER_IDENTITY_PARAMETER = aws_ssm_parameter.sender_identity.name
+    }
+  }
+
   logging_config {
     log_format = "JSON"
   }
