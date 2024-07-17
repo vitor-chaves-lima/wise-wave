@@ -13,7 +13,7 @@ type SendEmailUseCase struct {
 }
 
 func (u *SendEmailUseCase) Execute(emailTemplate domain.EmailTemplate, data map[string]interface{}, to string) (err error) {
-	subject, body, err := u.templateManager.FormatEmail(domain.MagicLink, data)
+	subject, body, err := u.templateManager.FormatEmail(emailTemplate, data)
 	if err != nil {
 		return errors.Join(errors.New("couldn't format email"), err)
 	}

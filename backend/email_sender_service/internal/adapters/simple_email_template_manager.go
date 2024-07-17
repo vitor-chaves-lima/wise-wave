@@ -18,7 +18,7 @@ type SimpleTemplateManager struct {
 func (a *SimpleTemplateManager) formatNewUserMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
 	subject = "Seja bem-vindo"
 
-	if data["Link"] == "" {
+	if _, ok := data["Link"]; !ok {
 		return "", "", fmt.Errorf("invalid data format for NewUserMagicLinkEmail template, must have a 'Link' property")
 	}
 
@@ -35,7 +35,7 @@ func (a *SimpleTemplateManager) formatNewUserMagicLinkEmail(data map[string]inte
 func (a *SimpleTemplateManager) formatMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
 	subject = "Seu acesso à experiência"
 
-	if data["Link"] == "" {
+	if _, ok := data["Link"]; !ok {
 		return "", "", fmt.Errorf("invalid data format for MagicLinkEmail template, must have a 'Link' property")
 	}
 
