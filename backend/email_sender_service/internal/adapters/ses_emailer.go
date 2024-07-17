@@ -17,15 +17,15 @@ func NewSESEmailer(client *ses.Client, source string) ports.Emailer {
 	return &SESEmailer{client: client, source: source}
 }
 
-func (e *SESEmailer) SendEmail(to, subject, body string) error {
+func (e *SESEmailer) SendHTMLEmail(to, subject, htmlBody string) error {
 	input := &ses.SendEmailInput{
 		Destination: &types.Destination{
 			ToAddresses: []string{to},
 		},
 		Message: &types.Message{
 			Body: &types.Body{
-				Text: &types.Content{
-					Data: &body,
+				Html: &types.Content{
+					Data: &htmlBody,
 				},
 			},
 			Subject: &types.Content{
