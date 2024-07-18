@@ -3,6 +3,7 @@ module wisewave.tech/email_sender_service
 go 1.22.0
 
 require (
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.26
 	github.com/aws/aws-sdk-go-v2/service/ses v1.25.2
 )
