@@ -1,4 +1,4 @@
-package adapters
+package services
 
 import (
 	"bytes"
@@ -7,19 +7,18 @@ import (
 	"html/template"
 
 	"wisewave.tech/email_sender_service/internal/domain"
-	"wisewave.tech/email_sender_service/internal/ports"
 )
 
-type SimpleTemplateManager struct {
+type EmailTemplateManager struct {
 	newUserMagicLinkTemplate *template.Template
 	magicLinkTemplate        *template.Template
 }
 
-func (a *SimpleTemplateManager) formatNewUserMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
+func (a *EmailTemplateManager) formatNewUserMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
 	subject = "Seja bem-vindo"
 
-	if _, ok := data["Link"]; !ok {
-		return "", "", fmt.Errorf("invalid data format for NewUserMagicLinkEmail template, must have a 'Link' property")
+	if _, ok := data["link"]; !ok {
+		return "", "", fmt.Errorf("invalid data format for NewUserMagicLinkEmail template, must have a 'link' property")
 	}
 
 	var bodyBuffer bytes.Buffer
@@ -32,11 +31,11 @@ func (a *SimpleTemplateManager) formatNewUserMagicLinkEmail(data map[string]inte
 	return subject, body, nil
 }
 
-func (a *SimpleTemplateManager) formatMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
+func (a *EmailTemplateManager) formatMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
 	subject = "Seu acesso à experiência"
 
-	if _, ok := data["Link"]; !ok {
-		return "", "", fmt.Errorf("invalid data format for MagicLinkEmail template, must have a 'Link' property")
+	if _, ok := data["link"]; !ok {
+		return "", "", fmt.Errorf("invalid data format for MagicLinkEmail template, must have a 'link' property")
 	}
 
 	var bodyBuffer bytes.Buffer
@@ -49,12 +48,12 @@ func (a *SimpleTemplateManager) formatMagicLinkEmail(data map[string]interface{}
 	return subject, body, nil
 }
 
-func (a *SimpleTemplateManager) FormatEmail(template domain.EmailTemplate, data map[string]interface{}) (subject string, body string, err error) {
-	switch template {
+func (a *EmailTemplateManager) FormatEmail(emailTemplateData domain.EmailTemplateData) (subject string, body string, err error) {
+	switch emailTemplateData.Type {
 	case domain.NewUserMagicLink:
-		return a.formatNewUserMagicLinkEmail(data)
+		return a.formatNewUserMagicLinkEmail(emailTemplateData.Data)
 	case domain.MagicLink:
-		return a.formatMagicLinkEmail(data)
+		return a.formatMagicLinkEmail(emailTemplateData.Data)
 	default:
 		return "", "", fmt.Errorf("invalid e-mail template")
 	}
@@ -86,7 +85,7 @@ func loadNewUserMagicLinkTemplate() (templateInstance *template.Template, err er
                         <p style="font-size: 16px; margin: 0;">Obrigado por se cadastrar. Clique no link abaixo para continuar:</p>
                     </div>
                     <p style="font-size: 16px; margin: 0;">
-                        <a href="{{.Link}}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 4px;">Acessar experiência</a>
+                        <a href="{{.link}}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 4px;">Acessar experiência</a>
                     </p>
                 </td>
             </tr>
@@ -129,7 +128,7 @@ func loadMagicLinkTemplate() (templateInstance *template.Template, err error) {
                         <p style="font-size: 16px; margin: 0;">Você solicitou acesso à experiência. Clique no link abaixo para continuar:</p>
                     </div>
                     <p style="font-size: 16px; margin: 0;">
-                        <a href="{{.Link}}"
+                        <a href="{{.link}}"
                             style="background-color: #4CAF50; color: white; padding: 12px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 4px;">Acessar
                             experiência</a>
                     </p>
@@ -154,7 +153,7 @@ func loadMagicLinkTemplate() (templateInstance *template.Template, err error) {
 	return templateInstance, nil
 }
 
-func NewSimpleTemplateManager() (templateManager ports.TemplateManager, err error) {
+func NewEmailTemplateManager() (templateManager *EmailTemplateManager, err error) {
 	newUserMagicLinkTemplate, err := loadNewUserMagicLinkTemplate()
 	if err != nil {
 		return nil, errors.Join(errors.New("couldn't create NewUserMagicLinkEmail template"), err)
@@ -165,5 +164,5 @@ func NewSimpleTemplateManager() (templateManager ports.TemplateManager, err erro
 		return nil, errors.Join(errors.New("couldn't create MagicLinkEmail template"), err)
 	}
 
-	return &SimpleTemplateManager{newUserMagicLinkTemplate, magicLinkTemplate}, nil
+	return &EmailTemplateManager{newUserMagicLinkTemplate, magicLinkTemplate}, nil
 }

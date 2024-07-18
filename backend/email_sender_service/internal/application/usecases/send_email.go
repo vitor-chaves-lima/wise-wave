@@ -6,14 +6,14 @@ import (
 	"fmt"
 
 	"wisewave.tech/email_sender_service/internal/application/dto"
+	"wisewave.tech/email_sender_service/internal/application/services"
 	"wisewave.tech/email_sender_service/internal/application/validators"
-	"wisewave.tech/email_sender_service/internal/domain"
 	"wisewave.tech/email_sender_service/internal/ports"
 )
 
 type SendEmailUseCase struct {
-	templateManager ports.TemplateManager
-	emailer         ports.Emailer
+	emailTemplateManager *services.EmailTemplateManager
+	emailer              ports.Emailer
 }
 
 func (u *SendEmailUseCase) Execute(messageBody string) (err error) {
@@ -26,12 +26,12 @@ func (u *SendEmailUseCase) Execute(messageBody string) (err error) {
 		return errors.Join(fmt.Errorf("invalid message format"), err)
 	}
 
-	emailType, err := domain.GetEmailTypeFromString(emailMessageDTO.EmailType)
+	emailTemplateData, err := dto.NewEmailTemplateDataFromDTO(emailMessageDTO)
 	if err != nil {
 		return errors.Join(fmt.Errorf("couldn't get email type"), err)
 	}
 
-	subject, body, err := u.templateManager.FormatEmail(emailType, emailMessageDTO.Data)
+	subject, body, err := u.emailTemplateManager.FormatEmail(emailTemplateData)
 	if err != nil {
 		return errors.Join(errors.New("couldn't format email"), err)
 	}
@@ -44,9 +44,14 @@ func (u *SendEmailUseCase) Execute(messageBody string) (err error) {
 	return nil
 }
 
-func NewSendEmailUseCase(templateManager ports.TemplateManager, emailer ports.Emailer) *SendEmailUseCase {
-	return &SendEmailUseCase{
-		templateManager,
-		emailer,
+func NewSendEmailUseCase(emailer ports.Emailer) (sendEmailUserCase *SendEmailUseCase, err error) {
+	emailTemplateManager, err := services.NewEmailTemplateManager()
+	if err != nil {
+		return nil, errors.Join(errors.New("couldn't instantiate a EmailTemplateManager"), err)
 	}
+
+	return &SendEmailUseCase{
+		emailTemplateManager,
+		emailer,
+	}, nil
 }
