@@ -2,7 +2,7 @@ data "aws_iam_policy_document" "send_email_policy" {
   version = "2012-10-17"
   statement {
     actions = [
-      "ses:SendTemplatedEmail",
+      "ses:SendEmail",
     ]
 
     resources = ["*"]
@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "send_logs_policy" {
       "logs:PutLogEvents"
     ]
 
-    resources = ["*"]
+    resources = ["arn:aws:logs:*:*:*"]
 
     effect = "Allow"
   }
@@ -69,7 +69,7 @@ data "aws_iam_policy_document" "email_sender_parameter_read_policy" {
     ]
 
     resources = [
-      aws_ssm_parameter.sender_identity.arn
+      aws_ssm_parameter.sender_email_identity.arn
     ]
   }
 }

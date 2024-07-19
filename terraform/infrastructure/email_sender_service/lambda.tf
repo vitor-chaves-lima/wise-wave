@@ -11,7 +11,7 @@ resource "aws_lambda_function" "email_sender_lambda" {
 
   environment {
     variables = {
-      SENDER_IDENTITY_PARAMETER = aws_ssm_parameter.sender_identity.name
+      SENDER_IDENTITY_PARAMETER = aws_ssm_parameter.sender_email_identity.name
     }
   }
 
