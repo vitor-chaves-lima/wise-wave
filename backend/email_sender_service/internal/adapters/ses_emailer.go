@@ -13,7 +13,7 @@ type SESEmailer struct {
 	source string
 }
 
-func NewSESEmailer(client *ses.Client, source string) ports.Emailer {
+func NewSESEmailer(ctx context.Context, client *ses.Client, source string) ports.Emailer {
 	return &SESEmailer{client: client, source: source}
 }
 

@@ -7,39 +7,66 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-lambda-go/lambdacontext"
+
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/aws/aws-sdk-go/aws"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"wisewave.tech/email_sender_service/internal/adapters"
 	"wisewave.tech/email_sender_service/internal/application/usecases"
-	"wisewave.tech/email_sender_service/internal/ports"
 )
 
 var (
-	sesClient            *ses.Client
-	ssmClient            *ssm.Client
-	sesEmailer           ports.Emailer
-	sqsConsumer          ports.QueueMessageConsumer
-	sendHTMLEmailUseCase *usecases.SendEmailUseCase
+	sesClient           *ses.Client
+	ssmClient           *ssm.Client
+	emailSenderIdentity string
 )
 
-func handle(ctx context.Context, event events.SQSEvent) {
-	log.Info("Starting lambda function")
-	err := sqsConsumer.Consume(event)
+func createLogger(ctx context.Context) *logrus.Entry {
+	lambdaContext, _ := lambdacontext.FromContext(ctx)
+
+	contextFields := logrus.Fields{
+		"requestId":          lambdaContext.AwsRequestID,
+		"invokedFunctionArn": lambdaContext.InvokedFunctionArn,
+	}
+
+	logger := logrus.New().WithField("type", "lambda.handler").WithField("record", contextFields)
+	logger.Logger.SetFormatter(&logrus.JSONFormatter{})
+
+	return logger
+}
+
+func handler(ctx context.Context, event events.SQSEvent) {
+	logger := createLogger(ctx)
+	logger.Info("Starting lambda function handler")
+
+	logger.Info("Initializing SES emailer")
+	sesEmailer := adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
+
+	logger.Info("Initializing send email usecase")
+	sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(sesEmailer)
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Info("Initializing SQS queue message consumer")
+	sqsConsumer := adapters.NewSQSQueueMessageConsumer(sendHTMLEmailUseCase)
+
+	err = sqsConsumer.Consume(event)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func getEmailSenderIdentityParameter() (emailSenderIdentityParameter string, err error) {
+func getEmailSenderIdentityParameter(logger *logrus.Entry) (emailSenderIdentityParameter string, err error) {
 	emailSenderIdentityParameter = os.Getenv("SENDER_IDENTITY_PARAMETER")
 	if emailSenderIdentityParameter == "" {
 		panic("SENDER_IDENTITY_PARAMETER env var is not set!")
 	}
 
-	log.WithField("emailSenderIdentityParameter", emailSenderIdentityParameter).Info("Searching email sender identity parameter in SSM")
+	logger.WithField("emailSenderIdentityParameter", emailSenderIdentityParameter).Info("Searching email sender identity parameter in SSM")
 	param, err := ssmClient.GetParameter(context.TODO(), &ssm.GetParameterInput{
 		Name:           aws.String(emailSenderIdentityParameter),
 		WithDecryption: aws.Bool(true),
@@ -52,39 +79,28 @@ func getEmailSenderIdentityParameter() (emailSenderIdentityParameter string, err
 }
 
 func init() {
-	log.SetFormatter(&log.JSONFormatter{})
+	logger := logrus.New().WithField("type", "lambda.init")
+	logger.Logger.SetFormatter(&logrus.JSONFormatter{})
 
-	log.Info("Loading AWS SDK config")
+	logger.Info("Loading AWS SDK config")
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		panic("unable to load SDK config, " + err.Error())
 	}
 
-	log.Info("Initializing SES client")
+	logger.Info("Initializing SES client")
 	sesClient = ses.NewFromConfig(cfg)
 
-	log.Info("Initializing SSM client")
+	logger.Info("Initializing SSM client")
 	ssmClient = ssm.NewFromConfig(cfg)
 
-	emailSenderIdentity, err := getEmailSenderIdentityParameter()
+	emailSenderIdentity, err := getEmailSenderIdentityParameter(logger)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Sender email identity", emailSenderIdentity)
-
-	log.Info("Initializing SES emailer")
-	sesEmailer = adapters.NewSESEmailer(sesClient, emailSenderIdentity)
-
-	log.Info("Initializing send email use case")
-	sendHTMLEmailUseCase, err = usecases.NewSendEmailUseCase(sesEmailer)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Info("Initializing SQS queue message consumer")
-	sqsConsumer = adapters.NewSQSQueueMessageConsumer(sendHTMLEmailUseCase)
+	logger.Info("Sender email identity", emailSenderIdentity)
 }
 
 func main() {
-	lambda.Start(handle)
+	lambda.Start(handler)
 }
