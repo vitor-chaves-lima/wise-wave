@@ -5,17 +5,19 @@ import (
 	"errors"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-lambda-go/lambdacontext"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/sirupsen/logrus"
+
+	"wisewave.tech/common/lib"
 	"wisewave.tech/email_sender_service/internal/adapters"
-	"wisewave.tech/email_sender_service/internal/application/usecases"
 )
 
 var (
@@ -24,7 +26,7 @@ var (
 	emailSenderIdentity string
 )
 
-func createLogger(ctx context.Context) *logrus.Entry {
+func handler(ctx context.Context, event events.SQSEvent) {
 	lambdaContext, _ := lambdacontext.FromContext(ctx)
 
 	contextFields := logrus.Fields{
@@ -33,31 +35,26 @@ func createLogger(ctx context.Context) *logrus.Entry {
 	}
 
 	logger := logrus.New().WithField("type", "lambda.handler").WithField("record", contextFields)
-	logger.Logger.SetFormatter(&logrus.JSONFormatter{})
+	ctx = lib.WithLogger(ctx, logger)
 
-	return logger
-}
-
-func handler(ctx context.Context, event events.SQSEvent) {
-	logger := createLogger(ctx)
 	logger.Info("Starting lambda function handler")
 
 	logger.Info("Initializing SES emailer")
-	sesEmailer := adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
+	_ = adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
 
 	logger.Info("Initializing send email usecase")
-	sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(sesEmailer)
-	if err != nil {
-		panic(err)
-	}
+	// sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(sesEmailer)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	logger.Info("Initializing SQS queue message consumer")
-	sqsConsumer := adapters.NewSQSQueueMessageConsumer(sendHTMLEmailUseCase)
+	// logger.Info("Initializing SQS queue message consumer")
+	// sqsConsumer := adapters.NewSQSQueueMessageConsumer(sendHTMLEmailUseCase)
 
-	err = sqsConsumer.Consume(event)
-	if err != nil {
-		panic(err)
-	}
+	// err = sqsConsumer.Consume(event)
+	// if err != nil {
+	// 	panic(err)
+	// }
 }
 
 func getEmailSenderIdentityParameter(logger *logrus.Entry) (emailSenderIdentityParameter string, err error) {

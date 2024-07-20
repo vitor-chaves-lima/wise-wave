@@ -1,15 +1,20 @@
-package services
+package managers
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"html/template"
 
+	"github.com/sirupsen/logrus"
+
+	"wisewave.tech/common/lib"
 	"wisewave.tech/email_sender_service/internal/domain"
 )
 
 type EmailTemplateManager struct {
+	ctx                      context.Context
 	newUserMagicLinkTemplate *template.Template
 	magicLinkTemplate        *template.Template
 }
@@ -153,16 +158,31 @@ func loadMagicLinkTemplate() (templateInstance *template.Template, err error) {
 	return templateInstance, nil
 }
 
-func NewEmailTemplateManager() (templateManager *EmailTemplateManager, err error) {
+func NewEmailTemplateManager(ctx context.Context) (templateManager *EmailTemplateManager, err error) {
+	fields := logrus.Fields{
+		"type":          "manager",
+		"name":          "email_template_manager",
+		"function_name": "NewEmailTemplateManager",
+	}
+	logger := lib.LoggerFromContext(ctx).WithFields(fields)
+
+	logger.Info("creating EmailTemplateManager")
+
+	logger.Info("loading NewUserMagicLink template")
 	newUserMagicLinkTemplate, err := loadNewUserMagicLinkTemplate()
 	if err != nil {
-		return nil, errors.Join(errors.New("couldn't create NewUserMagicLinkEmail template"), err)
+		err = errors.Join(errors.New("couldn't create NewUserMagicLinkEmail template"), err)
+		logger.Error(err)
+		return nil, err
 	}
 
+	logger.Info("loading MagicLinkTemplate template")
 	magicLinkTemplate, err := loadMagicLinkTemplate()
 	if err != nil {
-		return nil, errors.Join(errors.New("couldn't create MagicLinkEmail template"), err)
+		err = errors.Join(errors.New("couldn't create MagicLinkEmail template"), err)
+		logger.Error(err)
+		return nil, err
 	}
 
-	return &EmailTemplateManager{newUserMagicLinkTemplate, magicLinkTemplate}, nil
+	return &EmailTemplateManager{ctx, newUserMagicLinkTemplate, magicLinkTemplate}, nil
 }

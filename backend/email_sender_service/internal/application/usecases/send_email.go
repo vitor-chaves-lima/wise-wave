@@ -1,19 +1,21 @@
 package usecases
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 
 	"wisewave.tech/email_sender_service/internal/application/dto"
-	"wisewave.tech/email_sender_service/internal/application/services"
+	"wisewave.tech/email_sender_service/internal/application/managers"
 	"wisewave.tech/email_sender_service/internal/application/validators"
 	"wisewave.tech/email_sender_service/internal/ports"
 )
 
 type SendEmailUseCase struct {
-	emailTemplateManager *services.EmailTemplateManager
+	ctx                  context.Context
 	emailer              ports.Emailer
+	emailTemplateManager *managers.EmailTemplateManager
 }
 
 func (u *SendEmailUseCase) Execute(messageBody string) (err error) {
@@ -44,14 +46,10 @@ func (u *SendEmailUseCase) Execute(messageBody string) (err error) {
 	return nil
 }
 
-func NewSendEmailUseCase(emailer ports.Emailer) (sendEmailUserCase *SendEmailUseCase, err error) {
-	emailTemplateManager, err := services.NewEmailTemplateManager()
-	if err != nil {
-		return nil, errors.Join(errors.New("couldn't instantiate a EmailTemplateManager"), err)
-	}
-
+func NewSendEmailUseCase(ctx context.Context, emailer ports.Emailer, emailTemplateManager *managers.EmailTemplateManager) (sendEmailUserCase *SendEmailUseCase, err error) {
 	return &SendEmailUseCase{
-		emailTemplateManager,
+		ctx,
 		emailer,
+		emailTemplateManager,
 	}, nil
 }
