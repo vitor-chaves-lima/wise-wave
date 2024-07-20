@@ -103,7 +103,7 @@ func (a *EmailTemplateManager) formatMagicLinkEmail(data map[string]interface{})
 
 func (a *EmailTemplateManager) FormatEmail(emailTemplateData domain.EmailTemplateData) (subject string, body string, err error) {
 	logger := lib.LoggerFromContext(a.ctx).WithFields(logBaseFields).WithFields(logrus.Fields{
-		"type": emailTemplateData.Type,
+		"type": emailTemplateData.Type.String(),
 		"data": emailTemplateData.Data,
 	})
 

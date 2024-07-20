@@ -23,42 +23,9 @@ import (
 )
 
 var (
-	sesClient           *ses.Client
-	ssmClient           *ssm.Client
-	emailSenderIdentity string
+	sesClient *ses.Client
+	ssmClient *ssm.Client
 )
-
-func handler(ctx context.Context, event events.SQSEvent) {
-	lambdaContext, _ := lambdacontext.FromContext(ctx)
-
-	contextFields := logrus.Fields{
-		"requestId":          lambdaContext.AwsRequestID,
-		"invokedFunctionArn": lambdaContext.InvokedFunctionArn,
-	}
-
-	logger := lib.NewLogger(lib.TextFormatter).WithField("type", "lambda.handler").WithField("record", contextFields)
-	ctx = lib.WithLogger(ctx, logger)
-
-	sesEmailer := adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
-
-	emailTemplateManager, err := managers.NewEmailTemplateManager(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(ctx, sesEmailer, emailTemplateManager)
-	if err != nil {
-		panic(err)
-	}
-
-	logger.Info("Initializing SQS queue message consumer")
-	sqsConsumer := adapters.NewSQSQueueMessageConsumer(ctx, sendHTMLEmailUseCase)
-
-	err = sqsConsumer.Consume(event)
-	if err != nil {
-		panic(err)
-	}
-}
 
 func getEmailSenderIdentityParameter(logger *logrus.Entry) (emailSenderIdentityParameter string, err error) {
 	emailSenderIdentityParameter = os.Getenv("SENDER_IDENTITY_PARAMETER")
@@ -78,6 +45,43 @@ func getEmailSenderIdentityParameter(logger *logrus.Entry) (emailSenderIdentityP
 	return *param.Parameter.Value, nil
 }
 
+func handler(ctx context.Context, event events.SQSEvent) {
+	lambdaContext, _ := lambdacontext.FromContext(ctx)
+
+	contextFields := logrus.Fields{
+		"requestId":          lambdaContext.AwsRequestID,
+		"invokedFunctionArn": lambdaContext.InvokedFunctionArn,
+	}
+
+	logger := lib.NewLogger(lib.JSONFormatter).WithField("type", "lambda.handler").WithField("record", contextFields)
+	ctx = lib.WithLogger(ctx, logger)
+
+	emailSenderIdentity, err := getEmailSenderIdentityParameter(logger)
+	if err != nil {
+		panic(err)
+	}
+	logger.Info("sender email identity ", emailSenderIdentity)
+
+	sesEmailer := adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
+
+	emailTemplateManager, err := managers.NewEmailTemplateManager(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(ctx, sesEmailer, emailTemplateManager)
+	if err != nil {
+		panic(err)
+	}
+
+	sqsConsumer := adapters.NewSQSQueueMessageConsumer(ctx, sendHTMLEmailUseCase)
+
+	err = sqsConsumer.Consume(event)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func init() {
 	logger := logrus.New().WithField("type", "lambda.init")
 	logger.Logger.SetFormatter(&logrus.JSONFormatter{})
@@ -94,11 +98,6 @@ func init() {
 	logger.Info("Initializing SSM client")
 	ssmClient = ssm.NewFromConfig(cfg)
 
-	emailSenderIdentity, err := getEmailSenderIdentityParameter(logger)
-	if err != nil {
-		panic(err)
-	}
-	logger.Info("Sender email identity", emailSenderIdentity)
 }
 
 func main() {

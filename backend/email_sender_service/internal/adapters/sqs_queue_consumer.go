@@ -23,6 +23,8 @@ func NewSQSQueueMessageConsumer(ctx context.Context, sendEmailUseCase *usecases.
 	})
 	ctx = lib.WithLogger(ctx, logger)
 
+	logger.Info("initializing SQSQueueMessageConsumer")
+
 	return &SQSQueueMessageConsumer{ctx, sendEmailUseCase}
 }
 

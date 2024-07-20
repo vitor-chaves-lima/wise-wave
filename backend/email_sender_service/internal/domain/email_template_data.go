@@ -7,6 +7,10 @@ const (
 	MagicLink
 )
 
+func (e EmailType) String() string {
+	return [...]string{"NewUserMagicLink", "MagicLink"}[e]
+}
+
 type EmailTemplateData struct {
 	Type EmailType
 	Data map[string]interface{}

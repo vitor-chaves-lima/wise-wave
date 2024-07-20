@@ -18,8 +18,9 @@ type SESEmailer struct {
 
 func NewSESEmailer(ctx context.Context, client *ses.Client, source string) ports.Emailer {
 	logger := lib.LoggerFromContext(ctx).WithFields(logrus.Fields{
-		"type": "adapter",
-		"port": "emailer",
+		"type":   "adapter",
+		"port":   "emailer",
+		"source": source,
 	})
 	ctx = lib.WithLogger(ctx, logger)
 
