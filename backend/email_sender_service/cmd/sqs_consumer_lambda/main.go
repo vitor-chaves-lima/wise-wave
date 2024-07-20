@@ -18,6 +18,8 @@ import (
 
 	"wisewave.tech/common/lib"
 	"wisewave.tech/email_sender_service/internal/adapters"
+	"wisewave.tech/email_sender_service/internal/application/managers"
+	"wisewave.tech/email_sender_service/internal/application/usecases"
 )
 
 var (
@@ -34,27 +36,28 @@ func handler(ctx context.Context, event events.SQSEvent) {
 		"invokedFunctionArn": lambdaContext.InvokedFunctionArn,
 	}
 
-	logger := logrus.New().WithField("type", "lambda.handler").WithField("record", contextFields)
+	logger := lib.NewLogger(lib.TextFormatter).WithField("type", "lambda.handler").WithField("record", contextFields)
 	ctx = lib.WithLogger(ctx, logger)
 
-	logger.Info("Starting lambda function handler")
+	sesEmailer := adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
 
-	logger.Info("Initializing SES emailer")
-	_ = adapters.NewSESEmailer(ctx, sesClient, emailSenderIdentity)
+	emailTemplateManager, err := managers.NewEmailTemplateManager(ctx)
+	if err != nil {
+		panic(err)
+	}
 
-	logger.Info("Initializing send email usecase")
-	// sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(sesEmailer)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	sendHTMLEmailUseCase, err := usecases.NewSendEmailUseCase(ctx, sesEmailer, emailTemplateManager)
+	if err != nil {
+		panic(err)
+	}
 
-	// logger.Info("Initializing SQS queue message consumer")
-	// sqsConsumer := adapters.NewSQSQueueMessageConsumer(sendHTMLEmailUseCase)
+	logger.Info("Initializing SQS queue message consumer")
+	sqsConsumer := adapters.NewSQSQueueMessageConsumer(ctx, sendHTMLEmailUseCase)
 
-	// err = sqsConsumer.Consume(event)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = sqsConsumer.Consume(event)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func getEmailSenderIdentityParameter(logger *logrus.Entry) (emailSenderIdentityParameter string, err error) {

@@ -13,21 +13,59 @@ import (
 	"wisewave.tech/email_sender_service/internal/domain"
 )
 
+var logBaseFields = logrus.Fields{
+	"type": "manager",
+}
+
 type EmailTemplateManager struct {
 	ctx                      context.Context
 	newUserMagicLinkTemplate *template.Template
 	magicLinkTemplate        *template.Template
 }
 
-func (a *EmailTemplateManager) formatNewUserMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
-	subject = "Seja bem-vindo"
+func NewEmailTemplateManager(ctx context.Context) (templateManager *EmailTemplateManager, err error) {
+	logger := lib.LoggerFromContext(ctx).WithFields(logBaseFields)
 
-	if _, ok := data["link"]; !ok {
-		return "", "", fmt.Errorf("invalid data format for NewUserMagicLinkEmail template, must have a 'link' property")
+	logger.Info("creating EmailTemplateManager")
+
+	logger.Info("loading NewUserMagicLink template")
+	newUserMagicLinkTemplate, err := loadNewUserMagicLinkTemplate()
+	if err != nil {
+		err = errors.Join(errors.New("couldn't create NewUserMagicLinkEmail template"), err)
+		logger.Error(err)
+		return nil, err
 	}
 
+	logger.Info("loading MagicLinkTemplate template")
+	magicLinkTemplate, err := loadMagicLinkTemplate()
+	if err != nil {
+		err = errors.Join(errors.New("couldn't create MagicLinkEmail template"), err)
+		logger.Error(err)
+		return nil, err
+	}
+
+	return &EmailTemplateManager{ctx, newUserMagicLinkTemplate, magicLinkTemplate}, nil
+}
+
+func (a *EmailTemplateManager) formatNewUserMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
+	logger := lib.LoggerFromContext(a.ctx).WithFields(logBaseFields).WithFields(logrus.Fields{
+		"data": data,
+	})
+
+	subject = "Seja bem-vindo"
+
+	logger.Info("validating NewUserMagicLink data fields")
+	if _, ok := data["link"]; !ok {
+		err := fmt.Errorf("invalid data format for NewUserMagicLinkEmail template, must have a 'link' property")
+		logger.Error(err)
+		return "", "", err
+	}
+
+	logger.Info("parsing NewUserMagicLink data")
 	var bodyBuffer bytes.Buffer
 	if err := a.newUserMagicLinkTemplate.Execute(&bodyBuffer, data); err != nil {
+		err := errors.Join(fmt.Errorf("couldn't parse email data"), err)
+		logger.Error(err)
 		return "", "", err
 	}
 
@@ -37,14 +75,24 @@ func (a *EmailTemplateManager) formatNewUserMagicLinkEmail(data map[string]inter
 }
 
 func (a *EmailTemplateManager) formatMagicLinkEmail(data map[string]interface{}) (subject string, body string, err error) {
+	logger := lib.LoggerFromContext(a.ctx).WithFields(logBaseFields).WithFields(logrus.Fields{
+		"data": data,
+	})
+
 	subject = "Seu acesso à experiência"
 
+	logger.Info("validating NewUserMagicLink data fields")
 	if _, ok := data["link"]; !ok {
-		return "", "", fmt.Errorf("invalid data format for MagicLinkEmail template, must have a 'link' property")
+		err := fmt.Errorf("invalid data format for MagicLinkEmail template, must have a 'link' property")
+		logger.Error(err)
+		return "", "", err
 	}
 
+	logger.Info("parsing NewUserMagicLink data")
 	var bodyBuffer bytes.Buffer
 	if err := a.magicLinkTemplate.Execute(&bodyBuffer, data); err != nil {
+		err := errors.Join(fmt.Errorf("couldn't parse email data"), err)
+		logger.Error(err)
 		return "", "", err
 	}
 
@@ -54,6 +102,13 @@ func (a *EmailTemplateManager) formatMagicLinkEmail(data map[string]interface{})
 }
 
 func (a *EmailTemplateManager) FormatEmail(emailTemplateData domain.EmailTemplateData) (subject string, body string, err error) {
+	logger := lib.LoggerFromContext(a.ctx).WithFields(logBaseFields).WithFields(logrus.Fields{
+		"type": emailTemplateData.Type,
+		"data": emailTemplateData.Data,
+	})
+
+	logger.Info("formatting email")
+
 	switch emailTemplateData.Type {
 	case domain.NewUserMagicLink:
 		return a.formatNewUserMagicLinkEmail(emailTemplateData.Data)
@@ -156,33 +211,4 @@ func loadMagicLinkTemplate() (templateInstance *template.Template, err error) {
 	}
 
 	return templateInstance, nil
-}
-
-func NewEmailTemplateManager(ctx context.Context) (templateManager *EmailTemplateManager, err error) {
-	fields := logrus.Fields{
-		"type":          "manager",
-		"name":          "email_template_manager",
-		"function_name": "NewEmailTemplateManager",
-	}
-	logger := lib.LoggerFromContext(ctx).WithFields(fields)
-
-	logger.Info("creating EmailTemplateManager")
-
-	logger.Info("loading NewUserMagicLink template")
-	newUserMagicLinkTemplate, err := loadNewUserMagicLinkTemplate()
-	if err != nil {
-		err = errors.Join(errors.New("couldn't create NewUserMagicLinkEmail template"), err)
-		logger.Error(err)
-		return nil, err
-	}
-
-	logger.Info("loading MagicLinkTemplate template")
-	magicLinkTemplate, err := loadMagicLinkTemplate()
-	if err != nil {
-		err = errors.Join(errors.New("couldn't create MagicLinkEmail template"), err)
-		logger.Error(err)
-		return nil, err
-	}
-
-	return &EmailTemplateManager{ctx, newUserMagicLinkTemplate, magicLinkTemplate}, nil
 }

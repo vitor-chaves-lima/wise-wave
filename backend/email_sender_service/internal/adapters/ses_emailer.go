@@ -17,26 +17,21 @@ type SESEmailer struct {
 }
 
 func NewSESEmailer(ctx context.Context, client *ses.Client, source string) ports.Emailer {
-	fields := logrus.Fields{
-		"type":          "adapter",
-		"name":          "ses_emailer",
-		"function_name": "NewSESEmailer",
-	}
-	logger := lib.LoggerFromContext(ctx).WithFields(fields)
+	logger := lib.LoggerFromContext(ctx).WithFields(logrus.Fields{
+		"type": "adapter",
+		"port": "emailer",
+	})
+	ctx = lib.WithLogger(ctx, logger)
 
 	logger.Info("creating SESEmailer")
 	return &SESEmailer{ctx, client, source}
 }
 
 func (e *SESEmailer) SendHTMLEmail(to, subject, htmlBody string) error {
-	fields := logrus.Fields{
-		"type":          "adapter",
-		"name":          "ses_emailer",
-		"function_name": "emailer.SendHTMLEmail",
-		"to":            to,
-		"subject":       subject,
-	}
-	logger := lib.LoggerFromContext(e.ctx).WithFields(fields)
+	logger := lib.LoggerFromContext(e.ctx).WithFields(logrus.Fields{
+		"to":      to,
+		"subject": subject,
+	})
 
 	logger.Info("creating send email request input")
 	input := &ses.SendEmailInput{
