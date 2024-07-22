@@ -11,10 +11,10 @@ func handler(ctx context.Context, event events.CognitoEventUserPoolsDefineAuthCh
 	if len(event.Request.Session) == 0 {
 		response.IssueTokens = false
 		response.FailAuthentication = false
-		response.ChallengeName = "CUSTOM_CHALLENGE"
+		response.ChallengeName = "MAGIC_LINK"
 	} else {
 		lastSession := event.Request.Session[len(event.Request.Session)-1]
-		if lastSession.ChallengeName == "CUSTOM_CHALLENGE" && lastSession.ChallengeResult {
+		if lastSession.ChallengeName == "MAGIC_LINK" && lastSession.ChallengeResult {
 			response.IssueTokens = true
 			response.FailAuthentication = false
 		} else {
