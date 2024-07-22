@@ -7,7 +7,9 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-func handler(ctx context.Context, event events.CognitoEventUserPoolsDefineAuthChallenge) (response events.CognitoEventUserPoolsDefineAuthChallengeResponse) {
+func handler(ctx context.Context, event *events.CognitoEventUserPoolsDefineAuthChallenge) (*events.CognitoEventUserPoolsDefineAuthChallenge, error) {
+	var response *events.CognitoEventUserPoolsDefineAuthChallengeResponse = &event.Response
+
 	if len(event.Request.Session) == 0 {
 		response.IssueTokens = false
 		response.FailAuthentication = false
@@ -23,7 +25,7 @@ func handler(ctx context.Context, event events.CognitoEventUserPoolsDefineAuthCh
 		}
 	}
 
-	return response
+	return event, nil
 }
 
 func main() {
