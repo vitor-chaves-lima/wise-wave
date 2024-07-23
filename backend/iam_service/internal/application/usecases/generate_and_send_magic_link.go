@@ -9,24 +9,27 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	email_sender_service "wisewave.tech/email_sender_service/lib/ports"
 	"wisewave.tech/iam_service/internal/ports"
 )
 
 type GenerateAndSendMagicLinkUseCase struct {
-	logger         *logrus.Entry
-	magicLinkTable ports.MagicLinkChallengeTable
+	logger                      *logrus.Entry
+	magicLinkTable              ports.MagicLinkChallengeTable
+	emailSenderMessagePublisher email_sender_service.EmailSenderServiceMessagePublisher
 }
 
-func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable) *GenerateAndSendMagicLinkUseCase {
+func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable, emailSenderMessagePublisher email_sender_service.EmailSenderServiceMessagePublisher) *GenerateAndSendMagicLinkUseCase {
 	logger := logrus.WithField("type", "usecase")
 
 	return &GenerateAndSendMagicLinkUseCase{
 		logger,
 		magicLinkTable,
+		emailSenderMessagePublisher,
 	}
 }
 
-func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId string) error {
+func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId string, userEmail string) error {
 	logger := uc.logger.WithField("userId", userId)
 
 	logger.Info("generating magic link challenge")
@@ -40,6 +43,15 @@ func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId s
 	err = uc.magicLinkTable.StoreChallenge(userId, magicLinkChallenge)
 	if err != nil {
 		logger.WithError(err).Error("couldn't store magic link challenge")
+		return err
+	}
+
+	magicLink := fmt.Sprintf("https://iam.wisewave.tech/magic-link?challenge=%s", magicLinkChallenge)
+
+	logger.Info("sending magic link email")
+	err = uc.emailSenderMessagePublisher.SendMagicLinkEmail(userEmail, magicLink)
+	if err != nil {
+		logger.WithError(err).Error("couldn't send magic link email")
 		return err
 	}
 
