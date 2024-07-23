@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -37,13 +38,15 @@ func NewDynamodbMagicLinkChallangeTable(ctx context.Context, dynamodbClient *dyn
 func (a *DynamoDBMagicLinkChallangeTable) StoreChallenge(userId string, magicLinkChallenge string) (err error) {
 	logger := a.logger.WithField("userId", userId)
 
+	completeChallengeTTL := time.Now().Unix() + a.challengeTTL
+
 	logger.Info("generating table data input")
 	putItemDataInput := &dynamodb.PutItemInput{
 		TableName: aws.String(a.tableName),
 		Item: map[string]types.AttributeValue{
 			"UserID":    &types.AttributeValueMemberS{Value: userId},
 			"Challenge": &types.AttributeValueMemberS{Value: magicLinkChallenge},
-			"TTL":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", a.challengeTTL)},
+			"TTL":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", completeChallengeTTL)},
 		},
 	}
 

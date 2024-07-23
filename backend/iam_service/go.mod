@@ -6,7 +6,9 @@ require (
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go v1.55.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.27
+	github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider v1.41.4
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.3
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.3
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.52.3
 	github.com/google/uuid v1.6.0
 	github.com/sirupsen/logrus v1.9.3
@@ -24,7 +26,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.9.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.22.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.3 // indirect

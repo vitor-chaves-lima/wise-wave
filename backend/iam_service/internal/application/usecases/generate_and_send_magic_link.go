@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"wisewave.tech/common/lib"
 	email_sender_service "wisewave.tech/email_sender_service/lib/ports"
 	"wisewave.tech/iam_service/internal/ports"
 )
@@ -21,7 +22,7 @@ type GenerateAndSendMagicLinkUseCase struct {
 }
 
 func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable, emailSenderMessagePublisher email_sender_service.EmailSenderServiceMessagePublisher, frontendUrl string) *GenerateAndSendMagicLinkUseCase {
-	logger := logrus.WithField("type", "usecase")
+	logger := lib.LoggerFromContext(ctx).WithField("type", "usecase")
 
 	return &GenerateAndSendMagicLinkUseCase{
 		logger,
@@ -31,8 +32,8 @@ func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable port
 	}
 }
 
-func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId string, userEmail string) error {
-	logger := uc.logger.WithField("userId", userId)
+func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId string, userEmail string, emailVerified bool) error {
+	logger := uc.logger.WithField("userId", userId).WithField("userEmail", userEmail)
 
 	logger.Info("generating magic link challenge")
 	magicLinkChallenge, err := generateMagicLinkChallenge(userId)
@@ -50,8 +51,14 @@ func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId s
 
 	magicLink := fmt.Sprintf("%s/magic-link/validate?challenge=%s", uc.frontendUrl, magicLinkChallenge)
 
-	logger.Info("sending magic link email")
-	err = uc.emailSenderMessagePublisher.SendMagicLinkEmail(userEmail, magicLink)
+	if emailVerified {
+		logger.Info("user is verified, sending magic link email")
+		err = uc.emailSenderMessagePublisher.SendMagicLinkEmail(userEmail, magicLink)
+	} else {
+		logger.Info("user is not verified, sending new user magic link email")
+		err = uc.emailSenderMessagePublisher.SendNewUserMagicLinkEmail(userEmail, magicLink)
+	}
+
 	if err != nil {
 		logger.WithError(err).Error("couldn't send magic link email")
 		return err
