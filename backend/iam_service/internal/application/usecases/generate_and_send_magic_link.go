@@ -17,15 +17,17 @@ type GenerateAndSendMagicLinkUseCase struct {
 	logger                      *logrus.Entry
 	magicLinkTable              ports.MagicLinkChallengeTable
 	emailSenderMessagePublisher email_sender_service.EmailSenderServiceMessagePublisher
+	frontendUrl                 string
 }
 
-func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable, emailSenderMessagePublisher email_sender_service.EmailSenderServiceMessagePublisher) *GenerateAndSendMagicLinkUseCase {
+func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable, emailSenderMessagePublisher email_sender_service.EmailSenderServiceMessagePublisher, frontendUrl string) *GenerateAndSendMagicLinkUseCase {
 	logger := logrus.WithField("type", "usecase")
 
 	return &GenerateAndSendMagicLinkUseCase{
 		logger,
 		magicLinkTable,
 		emailSenderMessagePublisher,
+		frontendUrl,
 	}
 }
 
@@ -46,7 +48,7 @@ func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId s
 		return err
 	}
 
-	magicLink := fmt.Sprintf("https://iam.wisewave.tech/magic-link?challenge=%s", magicLinkChallenge)
+	magicLink := fmt.Sprintf("%s/magic-link/validate?challenge=%s", uc.frontendUrl, magicLinkChallenge)
 
 	logger.Info("sending magic link email")
 	err = uc.emailSenderMessagePublisher.SendMagicLinkEmail(userEmail, magicLink)
