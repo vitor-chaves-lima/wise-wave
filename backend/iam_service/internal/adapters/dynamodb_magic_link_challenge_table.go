@@ -81,9 +81,7 @@ func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(userId string) (magicLink
 	}
 
 	if result.Item == nil {
-		err := fmt.Errorf("magic link challenge not found")
-		logger.Error(err)
-		return "", err
+		return "", nil
 	}
 
 	magicLinkChallengeAttribute, ok := result.Item["Challenge"].(*types.AttributeValueMemberS)
