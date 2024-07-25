@@ -32,21 +32,21 @@ func NewGenerateAndSendMagicLinkUseCase(ctx context.Context, magicLinkTable port
 	}
 }
 
-func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId string, userEmail string, emailVerified bool) error {
+func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId string, userEmail string, emailVerified bool) (challenge string, err error) {
 	logger := uc.logger.WithField("userId", userId).WithField("userEmail", userEmail)
 
 	logger.Info("generating magic link challenge")
 	magicLinkChallenge, err := generateMagicLinkChallenge(userId)
 	if err != nil {
 		logger.WithError(err).Error("couldn't generate magic link challenge")
-		return err
+		return "", err
 	}
 
 	logger.Info("storing magic link challenge")
-	err = uc.magicLinkTable.StoreChallenge(userId, magicLinkChallenge)
+	err = uc.magicLinkTable.StoreChallenge(magicLinkChallenge)
 	if err != nil {
 		logger.WithError(err).Error("couldn't store magic link challenge")
-		return err
+		return "", err
 	}
 
 	magicLink := fmt.Sprintf("%s/magic-link/validate?challenge=%s", uc.frontendUrl, magicLinkChallenge)
@@ -61,10 +61,10 @@ func (uc *GenerateAndSendMagicLinkUseCase) Execute(ctx context.Context, userId s
 
 	if err != nil {
 		logger.WithError(err).Error("couldn't send magic link email")
-		return err
+		return "", err
 	}
 
-	return nil
+	return magicLinkChallenge, nil
 }
 
 func generateMagicLinkChallenge(userId string) (magicLinkChallenge string, err error) {

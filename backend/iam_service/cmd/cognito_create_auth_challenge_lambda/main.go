@@ -141,10 +141,14 @@ func handler(ctx context.Context, event *events.CognitoEventUserPoolsCreateAuthC
 		magicLinkChallengeTable := adapters.NewDynamodbMagicLinkChallangeTable(ctx, dynamodbClient, challengeTTL, magicLinkTableName)
 		generateAndSendMagicLinkUseCase := usecases.NewGenerateAndSendMagicLinkUseCase(ctx, magicLinkChallengeTable, email_sender_message_publisher, frontendUrl)
 
-		generateAndSendMagicLinkUseCase.Execute(ctx, userId, email, emailVerifiedBool)
+		challenge, err := generateAndSendMagicLinkUseCase.Execute(ctx, userId, email, emailVerifiedBool)
+		if err != nil {
+			return event, fmt.Errorf("failed to generate and send magic link: %w", err)
+		}
 
 		response.PublicChallengeParameters = map[string]string{
-			email: email,
+			"email":     email,
+			"challenge": challenge,
 		}
 	}
 
