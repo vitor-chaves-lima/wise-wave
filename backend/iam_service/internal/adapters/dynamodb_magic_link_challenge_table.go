@@ -35,8 +35,8 @@ func NewDynamodbMagicLinkChallangeTable(ctx context.Context, dynamodbClient *dyn
 	}
 }
 
-func (a *DynamoDBMagicLinkChallangeTable) StoreChallenge(userId string, magicLinkChallenge string) (err error) {
-	logger := a.logger.WithField("userId", userId)
+func (a *DynamoDBMagicLinkChallangeTable) StoreChallenge(challenge string) (err error) {
+	logger := a.logger
 
 	completeChallengeTTL := time.Now().Unix() + a.challengeTTL
 
@@ -44,8 +44,7 @@ func (a *DynamoDBMagicLinkChallangeTable) StoreChallenge(userId string, magicLin
 	putItemDataInput := &dynamodb.PutItemInput{
 		TableName: aws.String(a.tableName),
 		Item: map[string]types.AttributeValue{
-			"UserID":    &types.AttributeValueMemberS{Value: userId},
-			"Challenge": &types.AttributeValueMemberS{Value: magicLinkChallenge},
+			"Challenge": &types.AttributeValueMemberS{Value: challenge},
 			"TTL":       &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", completeChallengeTTL)},
 		},
 	}
@@ -61,14 +60,40 @@ func (a *DynamoDBMagicLinkChallangeTable) StoreChallenge(userId string, magicLin
 	return nil
 }
 
-func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(userId string) (magicLinkChallenge string, err error) {
-	logger := a.logger.WithField("userId", userId)
+func (a *DynamoDBMagicLinkChallangeTable) AssignSessionTokenToChallenge(challenge string, sessionToken string) (err error) {
+	logger := a.logger
+
+	completeChallengeTTL := time.Now().Unix() + a.challengeTTL
+
+	logger.Info("generating table data input")
+	putItemDataInput := &dynamodb.PutItemInput{
+		TableName: aws.String(a.tableName),
+		Item: map[string]types.AttributeValue{
+			"Challenge":    &types.AttributeValueMemberS{Value: challenge},
+			"SessionToken": &types.AttributeValueMemberS{Value: sessionToken},
+			"TTL":          &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", completeChallengeTTL)},
+		},
+	}
+
+	logger.Info("assign session to challenge")
+	_, err = a.dynamodbClient.PutItem(context.Background(), putItemDataInput)
+	if err != nil {
+		err := errors.Join(errors.New("couldn't add magic link challenge to table"), err)
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(challenge string) (storedChallenge string, storedSessionToken string, err error) {
+	logger := a.logger
 
 	logger.Info("generating get item input data")
 	getItemDataInput := &dynamodb.GetItemInput{
 		TableName: aws.String(a.tableName),
 		Key: map[string]types.AttributeValue{
-			"UserID": &types.AttributeValueMemberS{Value: userId},
+			"Challenge": &types.AttributeValueMemberS{Value: challenge},
 		},
 	}
 
@@ -77,31 +102,38 @@ func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(userId string) (magicLink
 	if err != nil {
 		err := errors.Join(errors.New("couldn't fetch magic link challenge from table"), err)
 		logger.Error(err)
-		return "", err
+		return "", "", err
 	}
 
 	if result.Item == nil {
-		return "", nil
+		return "", "", nil
 	}
 
 	magicLinkChallengeAttribute, ok := result.Item["Challenge"].(*types.AttributeValueMemberS)
 	if !ok {
 		err := fmt.Errorf("failed to get Challenge attribute")
 		logger.Error(err)
-		return "", err
+		return "", "", err
 	}
 
-	return magicLinkChallengeAttribute.Value, nil
+	sessionTokenAttribute, ok := result.Item["SessionToken"].(*types.AttributeValueMemberS)
+	if !ok {
+		err := fmt.Errorf("failed to get SessionToken attribute")
+		logger.Error(err)
+		return "", "", err
+	}
+
+	return magicLinkChallengeAttribute.Value, sessionTokenAttribute.Value, nil
 }
 
-func (a *DynamoDBMagicLinkChallangeTable) DeleteChallenge(userId string) (err error) {
-	logger := a.logger.WithField("userId", userId)
+func (a *DynamoDBMagicLinkChallangeTable) DeleteChallenge(challenge string) (err error) {
+	logger := a.logger
 
 	logger.Info("generating delete item input data")
 	deleteItemDataInput := &dynamodb.DeleteItemInput{
 		TableName: aws.String(a.tableName),
 		Key: map[string]types.AttributeValue{
-			"UserID": &types.AttributeValueMemberS{Value: userId},
+			"Challenge": &types.AttributeValueMemberS{Value: challenge},
 		},
 	}
 

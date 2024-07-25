@@ -22,11 +22,11 @@ func NewValidateMagicLinkChallengeUseCase(ctx context.Context, magicLinkTable po
 	}
 }
 
-func (uc *ValidateMagicLinkChallengeUseCase) Execute(ctx context.Context, userId string, magicLinkChallenge string) (bool, error) {
+func (uc *ValidateMagicLinkChallengeUseCase) Execute(ctx context.Context, challengeAnswer string, userId string) (bool, error) {
 	logger := uc.logger.WithField("userId", userId)
 
 	logger.Info("fetching magic link challenge from table")
-	storedMagicLinkChallenge, err := uc.magicLinkTable.GetChallenge(userId)
+	storedMagicLinkChallenge, _, err := uc.magicLinkTable.GetChallenge(challengeAnswer)
 	if err != nil {
 		logger.WithError(err).Error("couldn't fetch magic link challenge from table")
 		return false, err
@@ -37,19 +37,19 @@ func (uc *ValidateMagicLinkChallengeUseCase) Execute(ctx context.Context, userId
 		return false, nil
 	}
 
-	if storedMagicLinkChallenge == magicLinkChallenge {
+	isMagicLinkChallengeValid := storedMagicLinkChallenge == challengeAnswer
+	if isMagicLinkChallengeValid {
 		logger.Info("magic link challenge is valid")
-
-		logger.Info("deleting magic link challenge from table")
-		err = uc.magicLinkTable.DeleteChallenge(userId)
-		if err != nil {
-			logger.WithError(err).Error("couldn't delete magic link challenge from table")
-			return false, err
-		}
-
-		return true, nil
 	} else {
 		logger.Info("magic link challenge is not valid")
-		return false, nil
 	}
+
+	logger.Info("deleting magic link challenge from table")
+	err = uc.magicLinkTable.DeleteChallenge(challengeAnswer)
+	if err != nil {
+		logger.WithError(err).Error("couldn't delete magic link challenge from table")
+		return false, err
+	}
+
+	return isMagicLinkChallengeValid, nil
 }
