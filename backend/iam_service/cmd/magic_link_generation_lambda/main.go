@@ -22,6 +22,7 @@ import (
 	"wisewave.tech/common/lib"
 	"wisewave.tech/iam_service/internal/adapters"
 	"wisewave.tech/iam_service/internal/application/usecases"
+	"wisewave.tech/iam_service/internal/application/validators"
 )
 
 var (
@@ -155,6 +156,24 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (respons
 	startAuthenticationUseCase := usecases.NewStartAuthenticationProcessUseCase(ctx, identityProvider, magicLinkChallengeTable)
 	err = startAuthenticationUseCase.Execute(ctx, body.UserEmail)
 	if err != nil {
+		var reqErr *validators.InvalidEmailError
+		if !errors.As(err, &reqErr) {
+			logger.WithError(err).Info("internal error")
+			return events.APIGatewayProxyResponse{
+				Body:       "{\"message\": \"Internal error\"}",
+				StatusCode: 500,
+			}, err
+		} else {
+			logger.WithError(err).Info("invalid email")
+			return events.APIGatewayProxyResponse{
+				Body:       "{\"message\": \"Invalid email\"}",
+				StatusCode: 400,
+			}, nil
+		}
+	}
+
+	if err != nil {
+
 		logger.WithError(err).Error("unable to start authentication process")
 		return events.APIGatewayProxyResponse{
 			Body:       "{\"message\": \"Internal error\"}",

@@ -33,8 +33,9 @@ func (uc *StartAuthenticationProcessUseCase) Execute(ctx context.Context, userEm
 	logger.Info("validating email")
 	isValidEmail := validators.IsValidEmail(userEmail)
 	if !isValidEmail {
-		logger.Info("invalid email")
-		return nil
+		err := &validators.InvalidEmailError{Email: userEmail}
+		logger.WithError(err)
+		return err
 	}
 
 	logger.Info("checking if user exists")
