@@ -24,7 +24,7 @@ type DynamoDBMagicLinkChallangeTable struct {
 func NewDynamodbMagicLinkChallangeTable(ctx context.Context, dynamodbClient *dynamodb.Client, challengeTTL int64, tableName string) ports.MagicLinkChallengeTable {
 	logger := lib.LoggerFromContext(ctx).WithFields(logrus.Fields{
 		"type": "adapter",
-		"port": "dynamodb_magic_link_challenge_table",
+		"port": "magic_link_challenge_table",
 	})
 
 	return &DynamoDBMagicLinkChallangeTable{
@@ -75,7 +75,7 @@ func (a *DynamoDBMagicLinkChallangeTable) AssignSessionTokenToChallenge(challeng
 		},
 	}
 
-	logger.Info("assign session to challenge")
+	logger.Info("assigning session to challenge")
 	_, err = a.dynamodbClient.PutItem(context.Background(), putItemDataInput)
 	if err != nil {
 		err := errors.Join(errors.New("couldn't add magic link challenge to table"), err)
