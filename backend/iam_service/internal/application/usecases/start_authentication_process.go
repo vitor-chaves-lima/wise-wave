@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
+	"wisewave.tech/common/lib"
 	"wisewave.tech/iam_service/internal/ports"
 )
 
@@ -14,7 +15,7 @@ type StartAuthenticationProcessUseCase struct {
 }
 
 func NewStartAuthenticationProcessUseCase(ctx context.Context, identityProvider ports.IdentityProvider, magicLinkChallengeTable ports.MagicLinkChallengeTable) *StartAuthenticationProcessUseCase {
-	logger := logrus.New().WithFields(logrus.Fields{
+	logger := lib.LoggerFromContext(ctx).WithFields(logrus.Fields{
 		"type": "usecase",
 	})
 

@@ -121,7 +121,7 @@ func handler(ctx context.Context, event *events.CognitoEventUserPoolsVerifyAuthC
 	}
 
 	challengeAnswer, ok := event.Request.ChallengeAnswer.(string)
-	if err != nil {
+	if !ok {
 		return event, fmt.Errorf("failed to convert challengeAnswer to string: %w", err)
 	}
 

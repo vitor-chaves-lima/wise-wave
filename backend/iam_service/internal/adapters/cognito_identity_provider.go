@@ -13,12 +13,12 @@ import (
 
 type CognitoIdentityProvider struct {
 	logger              *logrus.Entry
+	cognitoClient       *cognitoidentityprovider.Client
 	userPoolId          string
 	applicationClientId string
-	cognitoClient       *cognitoidentityprovider.Client
 }
 
-func NewCognitoIdentityProvider(ctx context.Context, userPoolId string, applicationClientId string, cognitoClient *cognitoidentityprovider.Client) ports.IdentityProvider {
+func NewCognitoIdentityProvider(ctx context.Context, cognitoClient *cognitoidentityprovider.Client, userPoolId string, applicationClientId string) ports.IdentityProvider {
 	logger := lib.LoggerFromContext(ctx).WithFields(logrus.Fields{
 		"type": "adapter",
 		"port": "identity_provider",
@@ -26,9 +26,9 @@ func NewCognitoIdentityProvider(ctx context.Context, userPoolId string, applicat
 
 	return &CognitoIdentityProvider{
 		logger:              logger,
+		cognitoClient:       cognitoClient,
 		userPoolId:          userPoolId,
 		applicationClientId: applicationClientId,
-		cognitoClient:       cognitoClient,
 	}
 }
 
@@ -73,9 +73,9 @@ func (c *CognitoIdentityProvider) CheckUserExists(userEmail string) (bool, error
 	logger.Info("getting user")
 	user, err := c.cognitoClient.AdminGetUser(context.Background(), params)
 	if err != nil {
+		logger.WithError(err).Error("unable to get user")
 		var reqErr *types.UserNotFoundException
 		if !errors.As(err, &reqErr) {
-			logger.WithError(err).Error("unable to get user")
 			return false, err
 		} else {
 			logger.Info("user does not exist")
