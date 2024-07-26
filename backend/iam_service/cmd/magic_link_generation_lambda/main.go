@@ -172,15 +172,6 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (respons
 		}
 	}
 
-	if err != nil {
-
-		logger.WithError(err).Error("unable to start authentication process")
-		return events.APIGatewayProxyResponse{
-			Body:       "{\"message\": \"Internal error\"}",
-			StatusCode: 500,
-		}, err
-	}
-
 	return events.APIGatewayProxyResponse{
 		StatusCode: 201,
 	}, nil
