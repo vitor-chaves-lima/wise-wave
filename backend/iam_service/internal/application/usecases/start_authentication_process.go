@@ -5,6 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"wisewave.tech/common/lib"
+	"wisewave.tech/iam_service/internal/application/validators"
 	"wisewave.tech/iam_service/internal/ports"
 )
 
@@ -28,6 +29,13 @@ func NewStartAuthenticationProcessUseCase(ctx context.Context, identityProvider 
 
 func (uc *StartAuthenticationProcessUseCase) Execute(ctx context.Context, userEmail string) (err error) {
 	logger := uc.logger.WithField("userEmail", userEmail)
+
+	logger.Info("validating email")
+	isValidEmail := validators.IsValidEmail(userEmail)
+	if !isValidEmail {
+		logger.Info("invalid email")
+		return nil
+	}
 
 	logger.Info("checking if user exists")
 	userExists, err := uc.identityProvider.CheckUserExists(userEmail)
