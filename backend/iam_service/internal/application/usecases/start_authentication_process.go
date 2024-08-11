@@ -72,7 +72,7 @@ func (uc *StartAuthenticationProcessUseCase) Execute(ctx context.Context, userEm
 	}
 
 	logger.Info("assigning session token to challenge")
-	err = uc.magicLinkChallengeTable.AssignSessionTokenToChallenge(challenge, authenticationSessionToken)
+	err = uc.magicLinkChallengeTable.AssignSessionTokenToChallenge(challenge, authenticationSessionToken, userEmail)
 	if err != nil {
 		logger.WithError(err).Error("unable to assign session token to challenge")
 		return err

@@ -60,7 +60,7 @@ func (a *DynamoDBMagicLinkChallangeTable) StoreChallenge(challenge string) (err 
 	return nil
 }
 
-func (a *DynamoDBMagicLinkChallangeTable) AssignSessionTokenToChallenge(challenge string, sessionToken string) (err error) {
+func (a *DynamoDBMagicLinkChallangeTable) AssignSessionTokenToChallenge(challenge string, sessionToken string, userEmail string) (err error) {
 	logger := a.logger
 
 	completeChallengeTTL := time.Now().Unix() + a.challengeTTL
@@ -71,6 +71,7 @@ func (a *DynamoDBMagicLinkChallangeTable) AssignSessionTokenToChallenge(challeng
 		Item: map[string]types.AttributeValue{
 			"Challenge":    &types.AttributeValueMemberS{Value: challenge},
 			"SessionToken": &types.AttributeValueMemberS{Value: sessionToken},
+			"UserEmail":    &types.AttributeValueMemberS{Value: userEmail},
 			"TTL":          &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", completeChallengeTTL)},
 		},
 	}
@@ -86,7 +87,7 @@ func (a *DynamoDBMagicLinkChallangeTable) AssignSessionTokenToChallenge(challeng
 	return nil
 }
 
-func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(challenge string) (storedChallenge string, storedSessionToken string, err error) {
+func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(challenge string) (storedChallenge string, storedSessionToken string, userEmail string, err error) {
 	logger := a.logger
 
 	logger.Info("generating get item input data")
@@ -102,28 +103,35 @@ func (a *DynamoDBMagicLinkChallangeTable) GetChallenge(challenge string) (stored
 	if err != nil {
 		err := errors.Join(errors.New("couldn't fetch magic link challenge from table"), err)
 		logger.Error(err)
-		return "", "", err
+		return "", "", "", err
 	}
 
 	if result.Item == nil {
-		return "", "", nil
+		return "", "", "", nil
 	}
 
 	magicLinkChallengeAttribute, ok := result.Item["Challenge"].(*types.AttributeValueMemberS)
 	if !ok {
 		err := fmt.Errorf("failed to get Challenge attribute")
 		logger.Error(err)
-		return "", "", err
+		return "", "", "", err
 	}
 
 	sessionTokenAttribute, ok := result.Item["SessionToken"].(*types.AttributeValueMemberS)
 	if !ok {
 		err := fmt.Errorf("failed to get SessionToken attribute")
 		logger.Error(err)
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return magicLinkChallengeAttribute.Value, sessionTokenAttribute.Value, nil
+	userEmailAttribute, ok := result.Item["UserEmail"].(*types.AttributeValueMemberS)
+	if !ok {
+		err := fmt.Errorf("failed to get UserEmail attribute")
+		logger.Error(err)
+		return "", "", "", err
+	}
+
+	return magicLinkChallengeAttribute.Value, sessionTokenAttribute.Value, userEmailAttribute.Value, nil
 }
 
 func (a *DynamoDBMagicLinkChallangeTable) DeleteChallenge(challenge string) (err error) {
