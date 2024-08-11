@@ -157,7 +157,7 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (resposn
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Internal error",
+			Body:       "{\"message\": \"Internal error\"}",
 		}, nil
 	}
 
@@ -165,7 +165,7 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (resposn
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "Internal error",
+			Body:       "{\"message\": \"Internal error\"}",
 		}, nil
 	}
 
