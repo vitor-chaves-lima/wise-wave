@@ -26,7 +26,7 @@ func (uc *ValidateMagicLinkChallengeUseCase) Execute(ctx context.Context, challe
 	logger := uc.logger.WithField("userId", userId)
 
 	logger.Info("fetching magic link challenge from table")
-	storedMagicLinkChallenge, _, err := uc.magicLinkTable.GetChallenge(challengeAnswer)
+	storedMagicLinkChallenge, _, _, err := uc.magicLinkTable.GetChallenge(challengeAnswer)
 	if err != nil {
 		logger.WithError(err).Error("couldn't fetch magic link challenge from table")
 		return false, err

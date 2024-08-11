@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
 	"github.com/sirupsen/logrus"
 	"wisewave.tech/common/lib"
+	"wisewave.tech/iam_service/internal/application/dto"
 	"wisewave.tech/iam_service/internal/ports"
 )
 
@@ -108,4 +109,35 @@ func (c *CognitoIdentityProvider) AddUser(userEmail string) error {
 	}
 
 	return nil
+}
+
+func (c *CognitoIdentityProvider) FinishAuthenticationProcess(userEmail string, challenge string, sessionToken string) (sessionData *dto.UserSessionData, err error) {
+	logger := c.logger.WithField("challenge", challenge)
+
+	logger.Info("finishing authentication process")
+	params := &cognitoidentityprovider.AdminRespondToAuthChallengeInput{
+		ChallengeName: types.ChallengeNameTypeCustomChallenge,
+		ChallengeResponses: map[string]string{
+			"USERNAME": userEmail,
+			"ANSWER":   challenge,
+		},
+		Session:    &sessionToken,
+		UserPoolId: &c.userPoolId,
+		ClientId:   &c.applicationClientId,
+	}
+
+	logger.Info("responding to authentication challenge")
+	authChallengeResponse, err := c.cognitoClient.AdminRespondToAuthChallenge(context.Background(), params)
+	if err != nil {
+		logger.WithError(err).Error("unable to respond to authentication challenge")
+		return nil, err
+	}
+
+	return &dto.UserSessionData{
+		IdToken:      *authChallengeResponse.AuthenticationResult.IdToken,
+		AccessToken:  *authChallengeResponse.AuthenticationResult.AccessToken,
+		RefreshToken: *authChallengeResponse.AuthenticationResult.RefreshToken,
+		ExpiresIn:    authChallengeResponse.AuthenticationResult.ExpiresIn,
+		TokenType:    *authChallengeResponse.AuthenticationResult.TokenType,
+	}, nil
 }
