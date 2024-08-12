@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/aws/aws-sdk-go/aws"
@@ -24,11 +25,14 @@ import (
 var (
 	ssmClient      *ssm.Client
 	dynamodbClient *dynamodb.Client
+	cognitoClient  *cognitoidentityprovider.Client
 )
 
 const (
 	magicLinkTableNameEnvVar             = "MAGIC_LINK_TABLE_NAME"
 	magicLinkChallengeTTLParameterEnvVar = "MAGIC_LINK_CHALLENGE_TTL_PARAMETER"
+	cognitoUserPoolIdEnvVar              = "COGNITO_USER_POOL_ID"
+	cognitoApplicationClientIdEnvVar     = "COGNITO_APPLICATION_CLIENT_ID"
 )
 
 func init() {
@@ -46,6 +50,9 @@ func init() {
 
 	logger.Info("initializing dynamodb client")
 	dynamodbClient = dynamodb.NewFromConfig(cfg)
+
+	logger.Info("initializing cognito client")
+	cognitoClient = cognitoidentityprovider.NewFromConfig(cfg)
 }
 
 func getSSMParameterValue(logger *logrus.Entry, paramName string) (string, error) {
@@ -74,26 +81,36 @@ func getEnvVar(varName string) (string, error) {
 	return value, nil
 }
 
-func loadParameters(logger *logrus.Entry) (challengeTTL int64, magicLinkTableName string, err error) {
+func loadParameters(logger *logrus.Entry) (challengeTTL int64, magicLinkTableName string, userPoolId string, applicationClientId string, err error) {
 	logger = logger.WithField("type", "lambda.loadParameters")
 
 	logger.Info("loading magic link challenge TTL parameter")
 	challengeTTLStr, err := getSSMParameterValue(logger, magicLinkChallengeTTLParameterEnvVar)
 	if err != nil {
-		return 0, "", fmt.Errorf("failed to get magic link challenge TTL: %w", err)
+		return 0, "", "", "", fmt.Errorf("failed to get magic link challenge TTL: %w", err)
 	}
 	challengeTTL, err = strconv.ParseInt(challengeTTLStr, 10, 64)
 	if err != nil {
-		return 0, "", fmt.Errorf("failed to parse magic link challenge TTL: %w", err)
+		return 0, "", "", "", fmt.Errorf("failed to parse magic link challenge TTL: %w", err)
 	}
 
 	logger.Info("loading magic link table name parameter")
 	magicLinkTableName, err = getEnvVar(magicLinkTableNameEnvVar)
 	if err != nil {
-		return 0, "", fmt.Errorf("failed to get magic link table name: %w", err)
+		return 0, "", "", "", fmt.Errorf("failed to get magic link table name: %w", err)
 	}
 
-	return challengeTTL, magicLinkTableName, nil
+	userPoolId, err = getEnvVar(cognitoUserPoolIdEnvVar)
+	if err != nil {
+		return 0, "", "", "", fmt.Errorf("failed to get user pool id: %w", err)
+	}
+
+	applicationClientId, err = getEnvVar(cognitoApplicationClientIdEnvVar)
+	if err != nil {
+		return 0, "", "", "", fmt.Errorf("failed to get application client id: %w", err)
+	}
+
+	return challengeTTL, magicLinkTableName, userPoolId, applicationClientId, nil
 }
 
 func handler(ctx context.Context, event *events.CognitoEventUserPoolsVerifyAuthChallenge) (*events.CognitoEventUserPoolsVerifyAuthChallenge, error) {
@@ -108,9 +125,9 @@ func handler(ctx context.Context, event *events.CognitoEventUserPoolsVerifyAuthC
 	ctx = lib.WithLogger(ctx, logger)
 
 	logger.Info("loading parameters")
-	challengeTTL, magicLinkTableName, err := loadParameters(logger)
+	challengeTTL, magicLinkTableName, userPoolId, applicationClientId, err := loadParameters(logger)
 	if err != nil {
-		return event, err
+		return event, fmt.Errorf("failed to load parameters: %w", err)
 	}
 
 	var response *events.CognitoEventUserPoolsVerifyAuthChallengeResponse = &event.Response
@@ -126,7 +143,9 @@ func handler(ctx context.Context, event *events.CognitoEventUserPoolsVerifyAuthC
 	}
 
 	magicLinkChallengeTable := adapters.NewDynamodbMagicLinkChallangeTable(ctx, dynamodbClient, challengeTTL, magicLinkTableName)
-	generateAndSendMagicLinkUseCase := usecases.NewValidateMagicLinkChallengeUseCase(ctx, magicLinkChallengeTable)
+	identityProvider := adapters.NewCognitoIdentityProvider(ctx, cognitoClient, userPoolId, applicationClientId)
+
+	generateAndSendMagicLinkUseCase := usecases.NewValidateMagicLinkChallengeUseCase(ctx, magicLinkChallengeTable, identityProvider)
 
 	isTokenValid, err := generateAndSendMagicLinkUseCase.Execute(ctx, challengeAnswer, userId)
 	if err != nil {

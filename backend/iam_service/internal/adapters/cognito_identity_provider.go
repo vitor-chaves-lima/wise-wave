@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/sirupsen/logrus"
 	"wisewave.tech/common/lib"
 	"wisewave.tech/iam_service/internal/application/dto"
@@ -91,6 +92,29 @@ func (c *CognitoIdentityProvider) CheckUserExists(userEmail string) (bool, error
 	return true, nil
 }
 
+func (c *CognitoIdentityProvider) CheckUserVerified(userId string) (bool, error) {
+	logger := c.logger.WithField("userId", userId)
+
+	logger.Info("checking if user is verified")
+	params := &cognitoidentityprovider.AdminGetUserInput{
+		UserPoolId: &c.userPoolId,
+		Username:   &userId,
+	}
+
+	logger.Info("getting user")
+	user, err := c.cognitoClient.AdminGetUser(context.Background(), params)
+	if err != nil {
+		logger.WithError(err).Error("unable to get user")
+		return false, err
+	}
+
+	if user.UserStatus == types.UserStatusTypeConfirmed {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (c *CognitoIdentityProvider) AddUser(userEmail string) error {
 	logger := c.logger.WithField("userEmail", userEmail)
 
@@ -105,6 +129,31 @@ func (c *CognitoIdentityProvider) AddUser(userEmail string) error {
 	_, err := c.cognitoClient.AdminCreateUser(context.Background(), params)
 	if err != nil {
 		logger.WithError(err).Error("unable to create user")
+		return err
+	}
+
+	return nil
+}
+
+func (c *CognitoIdentityProvider) VerifyUser(userId string) (err error) {
+	logger := c.logger.WithField("userId", userId)
+
+	logger.Info("verifying user")
+	params := &cognitoidentityprovider.AdminUpdateUserAttributesInput{
+		UserAttributes: []types.AttributeType{
+			{
+				Name:  aws.String("email_verified"),
+				Value: aws.String("true"),
+			},
+		},
+		UserPoolId: &c.userPoolId,
+		Username:   &userId,
+	}
+
+	logger.Info("updating user attributes")
+	_, err = c.cognitoClient.AdminUpdateUserAttributes(context.Background(), params)
+	if err != nil {
+		logger.WithError(err).Error("unable to update user attributes")
 		return err
 	}
 

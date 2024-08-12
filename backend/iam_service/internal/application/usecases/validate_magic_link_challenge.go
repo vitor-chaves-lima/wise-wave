@@ -9,16 +9,18 @@ import (
 )
 
 type ValidateMagicLinkChallengeUseCase struct {
-	logger         *logrus.Entry
-	magicLinkTable ports.MagicLinkChallengeTable
+	logger           *logrus.Entry
+	magicLinkTable   ports.MagicLinkChallengeTable
+	identityProvider ports.IdentityProvider
 }
 
-func NewValidateMagicLinkChallengeUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable) *ValidateMagicLinkChallengeUseCase {
+func NewValidateMagicLinkChallengeUseCase(ctx context.Context, magicLinkTable ports.MagicLinkChallengeTable, identityProvider ports.IdentityProvider) *ValidateMagicLinkChallengeUseCase {
 	logger := lib.LoggerFromContext(ctx).WithField("type", "usecase")
 
 	return &ValidateMagicLinkChallengeUseCase{
 		logger,
 		magicLinkTable,
+		identityProvider,
 	}
 }
 
@@ -40,6 +42,18 @@ func (uc *ValidateMagicLinkChallengeUseCase) Execute(ctx context.Context, challe
 	isMagicLinkChallengeValid := storedMagicLinkChallenge == challengeAnswer
 	if isMagicLinkChallengeValid {
 		logger.Info("magic link challenge is valid")
+
+		isUserVerified, err := uc.identityProvider.CheckUserVerified(userId)
+		if err != nil {
+			logger.WithError(err).Error("couldn't check if user is verified")
+			return false, err
+		}
+
+		if !isUserVerified {
+			logger.Info("user is not verified")
+			uc.identityProvider.VerifyUser(userId)
+		}
+
 	} else {
 		logger.Info("magic link challenge is not valid")
 	}
