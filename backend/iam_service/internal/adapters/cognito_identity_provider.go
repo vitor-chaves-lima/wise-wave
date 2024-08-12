@@ -190,3 +190,27 @@ func (c *CognitoIdentityProvider) FinishAuthenticationProcess(userEmail string, 
 		TokenType:    *authChallengeResponse.AuthenticationResult.TokenType,
 	}, nil
 }
+
+func (c *CognitoIdentityProvider) RefreshToken(refreshToken string) (sessionData *dto.UserSessionData, err error) {
+	logger := c.logger
+
+	params := &cognitoidentityprovider.InitiateAuthInput{
+		AuthFlow:       types.AuthFlowTypeRefreshToken,
+		AuthParameters: map[string]string{"REFRESH_TOKEN": refreshToken},
+		ClientId:       &c.applicationClientId,
+	}
+
+	logger.Info("refreshing token")
+	tokenRefreshResponse, err := c.cognitoClient.InitiateAuth(context.Background(), params)
+	if err != nil {
+		logger.WithError(err).Error("unable to refresh token")
+		return nil, err
+	}
+
+	return &dto.UserSessionData{
+		IdToken:     *tokenRefreshResponse.AuthenticationResult.IdToken,
+		AccessToken: *tokenRefreshResponse.AuthenticationResult.AccessToken,
+		ExpiresIn:   tokenRefreshResponse.AuthenticationResult.ExpiresIn,
+		TokenType:   *tokenRefreshResponse.AuthenticationResult.TokenType,
+	}, nil
+}

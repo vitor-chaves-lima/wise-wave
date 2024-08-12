@@ -1,9 +1,9 @@
 package dto
 
 type UserSessionData struct {
-	IdToken      string
-	AccessToken  string
-	RefreshToken string
-	TokenType    string
-	ExpiresIn    int32
+	IdToken      string `json:"idToken"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken,omitempty"`
+	TokenType    string `json:"tokenType"`
+	ExpiresIn    int32  `json:"expiresIn"`
 }
