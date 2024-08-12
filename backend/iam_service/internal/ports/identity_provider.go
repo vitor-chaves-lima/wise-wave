@@ -9,4 +9,5 @@ type IdentityProvider interface {
 	VerifyUser(userId string) (err error)
 	InitiateAuthenticationProcess(userEmail string) (challenge string, authenticationSessionToken string, err error)
 	FinishAuthenticationProcess(userEmail string, challenge string, sessionToken string) (userSessionData *dto.UserSessionData, err error)
+	RefreshToken(refreshToken string) (sessionData *dto.UserSessionData, err error)
 }
