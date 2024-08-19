@@ -135,18 +135,39 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (respons
 	var body RequestBody
 	if err := json.Unmarshal([]byte(event.Body), &body); err != nil {
 		log.Printf("Failed to unmarshal request body: %v", err)
+
+		responseBody, _ := json.Marshal(map[string]string{
+			"message": "Invalid request body",
+		})
+
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "Invalid request body",
+			Headers: map[string]string{
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+				"Access-Control-Allow-Methods": "POST",
+			},
+			Body: string(responseBody),
 		}, nil
 	}
 
 	logger.Info("loading parameters")
 	challengeTTL, magicLinkTableName, userPoolId, applicationClientId, err := loadParameters(logger)
 	if err != nil {
+		responseBody, _ := json.Marshal(map[string]string{
+			"message": "Internal error",
+		})
+
 		return events.APIGatewayProxyResponse{
-			Body:       "{\"message\": \"Internal error\"}",
 			StatusCode: 500,
+			Headers: map[string]string{
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+				"Access-Control-Allow-Methods": "POST",
+			},
+			Body: string(responseBody),
 		}, err
 	}
 
@@ -159,21 +180,49 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (respons
 		var reqErr *validators.InvalidEmailError
 		if !errors.As(err, &reqErr) {
 			logger.WithError(err).Info("internal error")
+
+			responseBody, _ := json.Marshal(map[string]string{
+				"message": "Internal error",
+			})
+
 			return events.APIGatewayProxyResponse{
-				Body:       "{\"message\": \"Internal error\"}",
 				StatusCode: 500,
+				Headers: map[string]string{
+					"Content-Type":                 "application/json",
+					"Access-Control-Allow-Origin":  "*",
+					"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+					"Access-Control-Allow-Methods": "POST",
+				},
+				Body: string(responseBody),
 			}, err
 		} else {
 			logger.WithError(err).Info("invalid email")
+
+			responseBody, _ := json.Marshal(map[string]string{
+				"message": "Invalid email",
+			})
+
 			return events.APIGatewayProxyResponse{
-				Body:       "{\"message\": \"Invalid email\"}",
 				StatusCode: 400,
+				Headers: map[string]string{
+					"Content-Type":                 "application/json",
+					"Access-Control-Allow-Origin":  "*",
+					"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+					"Access-Control-Allow-Methods": "POST",
+				},
+				Body: string(responseBody),
 			}, nil
 		}
 	}
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 201,
+		Headers: map[string]string{
+			"Content-Type":                 "application/json",
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+			"Access-Control-Allow-Methods": "POST",
+		},
 	}, nil
 }
 

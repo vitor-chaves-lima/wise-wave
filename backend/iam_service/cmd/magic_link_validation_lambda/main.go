@@ -134,18 +134,39 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (resposn
 	var body RequestBody
 	if err := json.Unmarshal([]byte(event.Body), &body); err != nil {
 		log.Printf("failed to unmarshal request body: %v", err)
+
+		responseBody, _ := json.Marshal(map[string]string{
+			"message": "Internal error",
+		})
+
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       "{\"message\": \"invalid request body\"}",
+			Headers: map[string]string{
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+				"Access-Control-Allow-Methods": "POST",
+			},
+			Body: string(responseBody),
 		}, nil
 	}
 
 	logger.Info("loading parameters")
 	challengeTTL, magicLinkTableName, userPoolId, applicationClientId, err := loadParameters(logger)
 	if err != nil {
+		responseBody, _ := json.Marshal(map[string]string{
+			"message": "Internal error",
+		})
+
 		return events.APIGatewayProxyResponse{
-			Body:       "{\"message\": \"Internal error\"}",
 			StatusCode: 500,
+			Headers: map[string]string{
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+				"Access-Control-Allow-Methods": "POST",
+			},
+			Body: string(responseBody),
 		}, err
 	}
 
@@ -155,23 +176,49 @@ func handler(ctx context.Context, event *events.APIGatewayProxyRequest) (resposn
 	finishAuthenticationProcessUseCase := usecases.NewFinishAuthenticationUseCase(ctx, magicLinkChallengeTable, identityProvider)
 	userSessionData, err := finishAuthenticationProcessUseCase.Execute(ctx, body.Challenge)
 	if err != nil {
+		responseBody, _ := json.Marshal(map[string]string{
+			"message": "Internal error",
+		})
+
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "{\"message\": \"Internal error\"}",
-		}, nil
+			Headers: map[string]string{
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+				"Access-Control-Allow-Methods": "POST",
+			},
+			Body: string(responseBody),
+		}, err
 	}
 
 	bodyResponse, err := json.Marshal(userSessionData)
 	if err != nil {
+		responseBody, _ := json.Marshal(map[string]string{
+			"message": "Internal error",
+		})
+
 		return events.APIGatewayProxyResponse{
 			StatusCode: 500,
-			Body:       "{\"message\": \"Internal error\"}",
-		}, nil
+			Headers: map[string]string{
+				"Content-Type":                 "application/json",
+				"Access-Control-Allow-Origin":  "*",
+				"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+				"Access-Control-Allow-Methods": "POST",
+			},
+			Body: string(responseBody),
+		}, err
 	}
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       string(bodyResponse),
+		Headers: map[string]string{
+			"Content-Type":                 "application/json",
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Headers": "Content-Type,X-Amz-Date",
+			"Access-Control-Allow-Methods": "POST",
+		},
+		Body: string(bodyResponse),
 	}, nil
 }
 
