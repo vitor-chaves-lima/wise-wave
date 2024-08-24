@@ -12,7 +12,7 @@ const HomePage = () => {
                 <div>
                     <img src={logo} alt="logo wise wave" className="mx-auto" />
                     <h1 className="text-light fs-1-custom text-logo-ww">WiseWave</h1>
-                </div>
+                </div> 
                 <h2 className="fs-3 text-light">Seja bem-vindo!</h2>
                 <Link to={"access"}>
                     <Button variant="primary" size="lg" className="w-100 bg-bt-blue-500">Iniciar</Button>
