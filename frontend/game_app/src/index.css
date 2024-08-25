@@ -1,4 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Squada+One&display=swap');
+
 * {
     margin: 0;
     padding: 0;
+}
+
+.bg-blue-900{
+    background-color: #09294A;
+}
+
+.bg-bt-blue-500{
+    background-color: #145EA8;
+}
+
+.text-logo-ww{
+    font-family:  "squada one";
+}
+
+.fs-1-custom{
+    font-size: 60px;
 }
