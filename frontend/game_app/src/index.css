@@ -5,18 +5,47 @@
     padding: 0;
 }
 
+/* background azul */
 .bg-blue-900{
     background-color: #09294A;
 }
-
+/* background azul */
 .bg-bt-blue-500{
     background-color: #145EA8;
 }
-
+/* background cinza */
+.bg-bt-gry-100{
+    background-color: #145EA8;
+}
+/* fonte logo */
 .text-logo-ww{
     font-family:  "squada one";
 }
-
+/* fonte text access confirm*/
+.text-blue-900{
+    color: #09294A;
+}
+/* fonte title access confirm*/
+.text-blue-700{
+    color: #0F477E;
+}
+/* tamanho fonte logo */
 .fs-1-custom{
     font-size: 60px;
+}
+/* tamanho fonte bem vindo */
+.fs-2-custom{
+    font-size: 24px;
+}
+/* margin top access form */
+.mt-costum{
+    margin-top: 150px;
+}
+/* margin top return button */
+.mt-costum-return{
+    margin-top: 80px;
+}
+/* margin top var */
+.mt-costum-var2{
+    margin-top: 100px;
 }
