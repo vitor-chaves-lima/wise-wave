@@ -4,6 +4,7 @@ import HomePage from "./pages/Home";
 import AccessPage from "./pages/Access";
 import sendMagicLinkAction from "./actions/sendMagicLink";
 import AccessConfirmPage from "./pages/AccessConfirm";
+import GameExamplePage from "./pages/GameExample";
 
 const router = createBrowserRouter([
     {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
             {
                 path: "access-confirm",
                 element: <AccessConfirmPage />,
+            },
+            {
+                path: "game",
+                element: <GameExamplePage />,
             }
         ],
     },
