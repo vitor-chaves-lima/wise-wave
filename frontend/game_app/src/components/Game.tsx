@@ -1,5 +1,5 @@
 import { Stage } from "@pixi/react";
-import { Button, Col, Container, Row, Stack } from "react-bootstrap";
+import { Button, Row } from "react-bootstrap";
 import useWindowDimensions from "../hooks/windowDimensions";
 
 /*============ INTERFACES ============*/
