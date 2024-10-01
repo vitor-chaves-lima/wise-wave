@@ -4,6 +4,7 @@ import HomePage from "./pages/Home";
 import AccessPage from "./pages/Access";
 import sendMagicLinkAction from "./actions/sendMagicLink";
 import AccessConfirmPage from "./pages/AccessConfirm";
+import AntesUltimaPage from "./pages/AntesUltima";
 
 const router = createBrowserRouter([
     {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
             {
                 path: "access-confirm",
                 element: <AccessConfirmPage />,
+            },
+            {
+                path: "antes-ultima",
+                element: <AntesUltimaPage />,
             }
         ],
     },
