@@ -5,7 +5,7 @@ import returnIcon from "./../image/seta-esquerda.png";
 
 /*========== MAIN COMPONENT ==========*/
 
-const AntesUltimaPage = () => {
+const LastGamePage = () => {
 	return (
 		<div className="d-flex justify-content-center align-items-center vh-100 bg-blue-900">
 			<div
@@ -40,4 +40,4 @@ const AntesUltimaPage = () => {
 
 /*============== EXPORT ==============*/
 
-export default AntesUltimaPage;
+export default LastGamePage;

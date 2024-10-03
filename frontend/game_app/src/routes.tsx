@@ -1,10 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
-
 import HomePage from "./pages/Home";
 import AccessPage from "./pages/Access";
 import sendMagicLinkAction from "./actions/sendMagicLink";
 import AccessConfirmPage from "./pages/AccessConfirm";
-import AntesUltimaPage from "./pages/AntesUltima";
+import LastGamePage from "./pages/LastGame";
 
 const router = createBrowserRouter([
     {
@@ -24,8 +23,8 @@ const router = createBrowserRouter([
                 element: <AccessConfirmPage />,
             },
             {
-                path: "antes-ultima",
-                element: <AntesUltimaPage />,
+                path: "last-game",
+                element: <LastGamePage />,
             }
         ],
     },
