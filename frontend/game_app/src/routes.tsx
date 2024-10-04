@@ -5,6 +5,7 @@ import sendMagicLinkAction from "./actions/sendMagicLink";
 import AccessConfirmPage from "./pages/AccessConfirm";
 import LastGamePage from "./pages/LastGame";
 import GameStartPage from "./pages/GameStart";
+import GameExamplePage from "./pages/GameExample";
 
 const router = createBrowserRouter([
     {
@@ -30,10 +31,13 @@ const router = createBrowserRouter([
             {
                 path: 'game-start',
                 element: <GameStartPage/>
+            },
+            {
+                path: "game",
+                element: <GameExamplePage />,
             }
         ],
     },
-
 ]);
 
 export default router;
