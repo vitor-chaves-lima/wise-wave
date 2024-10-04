@@ -57,7 +57,7 @@ const GameStartPage = () => {
 
 								<Scanner onScan={handleScan} onError={handleError} classNames={{
 									container: "qr-code-container"
-								}} />;
+								}} />
 
 								{/*<h5 className="mt-10">Escaneie para jogar!</h5>*/}
 								{/*<Button className="mt-3" variant="primary">*/}
