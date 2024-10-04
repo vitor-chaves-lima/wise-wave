@@ -40,6 +40,11 @@ interface GameProps {
 	}
 	startPosition: PlayerPosition;
 	totalActions: number;
+	question: string;
+	alternatives: {
+		index: number;
+		text: string;
+	}[]
 }
 
 interface GameHeaderProps {
@@ -65,6 +70,11 @@ interface GameActionsProps {
 	characterPosition: PlayerPosition;
 	setCharacterPosition: Dispatch<SetStateAction<PlayerPosition>>,
 	handleRestart: () => void
+	question: string;
+	alternatives: {
+		index: number;
+		text: string;
+	}[]
 }
 
 /*========== SUB COMPONENTS ==========*/
@@ -130,8 +140,12 @@ const GameActions = ({
 						 setCharacterPosition,
 						 tileWidth,
 						 tileHeight,
-						 handleRestart
+						 handleRestart,
+						 question,
+						 alternatives,
 					 }: GameActionsProps) => {
+	const [showDialog, setShowDialog] = useState(true);
+
 	const buttonsDisabled = remainingActions === 0;
 	const canRestart = !(remainingActions < totalActions);
 
@@ -156,8 +170,10 @@ const GameActions = ({
 	const handleMoveTop = () => move(0, -1);
 	const handleMoveBottom = () => move(0, 1);
 
+	const handleDialogCloseButton = () => setShowDialog(false)
+
 	return (
-		<div className="d-flex flex-column actions-custom">
+		<div className="position-relative d-flex flex-column actions-custom">
 			<div className="d-flex m-0 p-2 bg-blue-900 text-white justify-content-between fs-2-custom">
 				Ações: {remainingActions} / {totalActions}
 
@@ -176,13 +192,25 @@ const GameActions = ({
 				<Button disabled={buttonsDisabled || !canMoveBottom} className="mt-2 actions-btn-custom"
 						onClick={handleMoveBottom}>↓</Button>
 			</div>
+
+			{/*{showDialog && <div*/}
+			{/*	className="position-absolute bg-white w-100 h-100 d-flex flex-column align-items-center justify-content-center">*/}
+			{/*	<p className="m-5 fs-2">{question}</p>*/}
+
+			{/*	<div className="p-5">*/}
+
+			{/*	</div>*/}
+
+			{/*	<Button disabled={buttonsDisabled || !canMoveBottom} className="fs-4"*/}
+			{/*			onClick={handleDialogCloseButton}>Fechar</Button>*/}
+			{/*</div>}*/}
 		</div>
 	)
 }
 
 /*========== MAIN COMPONENT ==========*/
 
-const GameComponent = ({levelTitle, totalActions, maps, startPosition}: GameProps) => {
+const GameComponent = ({levelTitle, totalActions, maps, startPosition, alternatives, question}: GameProps) => {
 	const {height} = useWindowDimensions();
 
 	const gameHeight = (height / 2) - 68;
@@ -213,7 +241,8 @@ const GameComponent = ({levelTitle, totalActions, maps, startPosition}: GameProp
 						 totalActions={totalActions}
 						 tileHeight={gameTileHeight} tileWidth={gameTileWidth}
 						 characterPosition={characterPosition} setCharacterPosition={setCharacterPosition}
-						 handleRestart={handleRestart}/>
+						 handleRestart={handleRestart}
+						 alternatives={alternatives} question={question}/>
 		</div>
 	);
 };
