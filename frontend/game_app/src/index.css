@@ -81,3 +81,8 @@
     height: 70px;
     font-size: 2rem;
 }
+
+.qr-code-container {
+	display: flex;
+	height: min-content!important;
+}
