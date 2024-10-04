@@ -48,14 +48,16 @@ const GameStartPage = () => {
 					 alt={"Logo"}/>
 
 					<div className="d-flex flex-column align-items-center justify-content-center ">
-						<Card className="text-center p-4  " style={{ maxWidth: "400px", borderRadius: "15px"}}>
+						<Card className="text-center p-4 " style={{ maxWidth: "400px", borderRadius: "15px"}}>
 							<Card.Body>
 
 								<Card.Title className="mb-4">
 									Escaneie o nosso QR code e mergulhe nos desafios.
 								</Card.Title>
 
-								<Scanner onScan={handleScan} onError={handleError} />;
+								<Scanner onScan={handleScan} onError={handleError} classNames={{
+									container: "qr-code-container"
+								}} />
 
 								{/*<h5 className="mt-10">Escaneie para jogar!</h5>*/}
 								{/*<Button className="mt-3" variant="primary">*/}
