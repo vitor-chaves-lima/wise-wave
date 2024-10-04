@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import logo from "./../image/ww-home-logo.png";
 import returnIcon from "./../image/seta-esquerda.png";
-import { Button, Row, Col, Image, Card } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 // import QRCode from "react-qr-code";
 
 
@@ -15,7 +15,7 @@ const GameStartPage = () => {
 				className="flex-column gap-5 text-center "
 				style={{ width: "80%", height: "100%" }}
 			>
-				<Link to={"/access"}>
+				<Link to={"/"}>
 					<Button
 						variant="link"
 						className="position-absolute start-0 mt-costum-return ms-3"
@@ -29,9 +29,9 @@ const GameStartPage = () => {
 				>
 					<img
 						src={logo}
-						className="mb-3"
+						className="mb-5"
 						style={{ width: "auto" }}
-					/>
+					 alt={"Logo"}/>
 
 					<div className="d-flex flex-column align-items-center justify-content-center ">
 						<Card className="text-center p-4  " style={{ maxWidth: "400px", borderRadius: "15px"}}>
@@ -55,5 +55,4 @@ const GameStartPage = () => {
 };
 
 /*============== EXPORT ==============*/
-""
 export default GameStartPage;
