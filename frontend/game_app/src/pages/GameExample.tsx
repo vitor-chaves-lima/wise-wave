@@ -5,12 +5,12 @@ import GameComponent, { ActionsMap, ActionType, TileMap, TileType } from '../com
 const GameExamplePage = () => {
 
     const gameTileMap: TileMap = [
-        [TileType.WALL, TileType.WALL, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
-        [TileType.WALL, TileType.WALL, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
-        [TileType.GROUND, TileType.WALL, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
-        [TileType.GROUND, TileType.WALL, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
-        [TileType.GROUND, TileType.WALL, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
-        [TileType.GROUND, TileType.WALL, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
+        [TileType.GROUND, TileType.GROUND, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
+        [TileType.GROUND, TileType.GROUND, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
+        [TileType.GROUND, TileType.GROUND, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
+        [TileType.GROUND, TileType.GROUND, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
+        [TileType.GROUND, TileType.GROUND, TileType.WATER, TileType.WATER, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
+        [TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
         [TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
         [TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND, TileType.GROUND],
     ]
@@ -30,8 +30,11 @@ const GameExamplePage = () => {
         <div>
             <GameComponent levelTitle='Teste' totalActions={4} maps={{
                 gameTileMap,
-                actionsMap
-            }} />
+                actionsMap,
+            }} startPosition={{
+				x: 0,
+				y: 0,
+			}} />
         </div>
 
     );

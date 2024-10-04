@@ -2,20 +2,27 @@
 import { Link } from "react-router-dom";
 import logo from "./../image/ww-home-logo.png";
 import returnIcon from "./../image/seta-esquerda.png";
-import { Button, Row, Col, Image, Card } from "react-bootstrap";
-// import QRCode from "react-qr-code";
-
+import { Button, Card } from "react-bootstrap";
+import { Scanner, IDetectedBarcode } from '@yudiel/react-qr-scanner';
 
 /*========== MAIN COMPONENT ==========*/
 
 const GameStartPage = () => {
+	const handleScan = (detectedCodes: IDetectedBarcode[]) => {
+	 	// redirect(result)
+	}
+
+	const handleError = () => {
+		alert("Não foi possível ler o QR code")
+	}
+
 	return (
 		<div className="d-flex justify-content-center align-items-center vh-100 bg-blue-900">
 			<div
 				className="flex-column gap-5 text-center "
 				style={{ width: "80%", height: "100%" }}
 			>
-				<Link to={"/access"}>
+				<Link to={"/"}>
 					<Button
 						variant="link"
 						className="position-absolute start-0 mt-costum-return ms-3"
@@ -29,22 +36,24 @@ const GameStartPage = () => {
 				>
 					<img
 						src={logo}
-						className="mb-3"
+						className="mb-5"
 						style={{ width: "auto" }}
-					/>
+					 alt={"Logo"}/>
 
 					<div className="d-flex flex-column align-items-center justify-content-center ">
 						<Card className="text-center p-4  " style={{ maxWidth: "400px", borderRadius: "15px"}}>
 							<Card.Body>
 
 								<Card.Title className="mb-4">
-									Escanei o nosso QR code e mergulhe nos desafios.
+									Escaneie o nosso QR code e mergulhe nos desafios.
 								</Card.Title>
-								{/* <QRCode value="link-ou-texto-para-o-qr-code" size={128} /> */}
-								<h5 className="mt-10">Escaneie para jogar!</h5>
-								<Button className="mt-3" variant="primary">
-									Escanear QR Code
-								</Button>
+
+								<Scanner onScan={handleScan} />;
+
+								{/*<h5 className="mt-10">Escaneie para jogar!</h5>*/}
+								{/*<Button className="mt-3" variant="primary">*/}
+								{/*	Escanear QR Code*/}
+								{/*</Button>*/}
 							</Card.Body>
 						</Card>
 					</div>
@@ -55,5 +64,4 @@ const GameStartPage = () => {
 };
 
 /*============== EXPORT ==============*/
-""
 export default GameStartPage;
