@@ -49,3 +49,12 @@
 .mt-costum-var2{
     margin-top: 100px;
 }
+/* margin top and buttom*/
+.mtb-costum-var1{
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+/* padding x */
+.px-costum{
+    padding: 0 10px 0 10px;
+}
