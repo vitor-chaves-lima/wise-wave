@@ -1,5 +1,5 @@
 // import Button from "react-bootstrap/Button";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import logo from "./../image/ww-home-logo.png";
 import returnIcon from "./../image/seta-esquerda.png";
 import { Button, Card } from "react-bootstrap";
@@ -8,8 +8,15 @@ import { Scanner, IDetectedBarcode } from '@yudiel/react-qr-scanner';
 /*========== MAIN COMPONENT ==========*/
 
 const GameStartPage = () => {
+	const navigate = useNavigate();
+
 	const handleScan = (detectedCodes: IDetectedBarcode[]) => {
-	 	// redirect(result)
+	 	if(detectedCodes[0].rawValue !== "3077d193ec31e39f04c67efe50e7d7b4"){
+			alert("Código inválido");
+		 	return;
+		}
+
+		navigate("/game", {replace: true})
 	}
 
 	const handleError = () => {
@@ -48,7 +55,7 @@ const GameStartPage = () => {
 									Escaneie o nosso QR code e mergulhe nos desafios.
 								</Card.Title>
 
-								<Scanner onScan={handleScan} />;
+								<Scanner onScan={handleScan} onError={handleError} />;
 
 								{/*<h5 className="mt-10">Escaneie para jogar!</h5>*/}
 								{/*<Button className="mt-3" variant="primary">*/}
