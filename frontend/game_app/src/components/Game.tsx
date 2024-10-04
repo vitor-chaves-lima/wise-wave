@@ -141,10 +141,10 @@ const GameActions = ({
 						 tileWidth,
 						 tileHeight,
 						 handleRestart,
-						 question,
-						 alternatives,
+						 // question,
+						 // alternatives,
 					 }: GameActionsProps) => {
-	const [showDialog, setShowDialog] = useState(true);
+	// const [showDialog, setShowDialog] = useState(true);
 
 	const buttonsDisabled = remainingActions === 0;
 	const canRestart = !(remainingActions < totalActions);
@@ -170,7 +170,7 @@ const GameActions = ({
 	const handleMoveTop = () => move(0, -1);
 	const handleMoveBottom = () => move(0, 1);
 
-	const handleDialogCloseButton = () => setShowDialog(false)
+	// const handleDialogCloseButton = () => setShowDialog(false)
 
 	return (
 		<div className="position-relative d-flex flex-column actions-custom">
