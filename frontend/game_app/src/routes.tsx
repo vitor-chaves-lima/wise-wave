@@ -4,6 +4,7 @@ import AccessPage from "./pages/Access";
 import sendMagicLinkAction from "./actions/sendMagicLink";
 import AccessConfirmPage from "./pages/AccessConfirm";
 import LastGamePage from "./pages/LastGame";
+import GameStartPage from "./pages/GameStart";
 
 const router = createBrowserRouter([
     {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
             {
                 path: "last-game",
                 element: <LastGamePage />,
+            },
+            {
+                path: 'game-start',
+                element: <GameStartPage/>
             }
         ],
     },
