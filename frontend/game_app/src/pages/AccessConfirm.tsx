@@ -39,8 +39,6 @@ const AccessConfirmPage = () => {
                 </div>
             </div>
         </div>
-
-
     );
 };
 
